@@ -4,7 +4,7 @@ import { requestAPI } from '../handler';
 
 import { getPackratID } from '../general/utils';
 
-const _addPackratFile = async (packratID: number|undefined, {startsWith = '', endsWith = '', contains = '', doesNotContain = ''} = {}): Promise<void> => {
+const _addPackratFile = async (packratID: number|undefined, {startsWith = '', endsWith = '', contains = '', doesNotContain = ''} = {}): Promise<BlobFile> => {
   const formData = new FormData();
 
   if (!packratID) {
@@ -17,6 +17,9 @@ const _addPackratFile = async (packratID: number|undefined, {startsWith = '', en
   let blob: BlobFile|undefined;
   try {
     blob = await downloadBlob(packratID, {startsWith, endsWith, contains, doesNotContain});
+    if (!blob) {
+      Promise.reject('Downloaded empty blob');
+    }
     formData.append('blob', blob!.content, blob!.name);
   } catch (error) {
     console.error(error);
@@ -33,21 +36,27 @@ const _addPackratFile = async (packratID: number|undefined, {startsWith = '', en
     Promise.reject('Failed to upload blob to Packrat cache');
   }
 
-  return Promise.resolve();
+  return Promise.resolve(blob!);
 };
 
 export const addApplicationHex = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, {doesNotContain: 'boot', endsWith: 'hex'});
+  await _addPackratFile(packratID, {doesNotContain: 'boot', endsWith: 'hex'});
+  return;
 };
 
 export const addApplicationImg = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, {endsWith: 'img'});
+  await _addPackratFile(packratID, {endsWith: 'img'});
+  return;
 };
 
-export const addPrivateConfig = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, {startsWith: 'config', contains: 'private', endsWith: 'json'});
+export const addPrivateConfig = async (packratID?: number): Promise<any> => {
+  const blob = await _addPackratFile(packratID, {startsWith: 'config', contains: 'private', endsWith: 'json'});
+  const config = JSON.parse(await blob.content.text());
+  return config;
 };
 
-export const addPublicConfig = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, {startsWith: 'config', doesNotContain: 'private', endsWith: 'json'});
+export const addPublicConfig = async (packratID?: number): Promise<any> => {
+  const blob = await _addPackratFile(packratID, {startsWith: 'config', doesNotContain: 'private', endsWith: 'json'});
+  const config = JSON.parse(await blob.content.text());
+  return config;
 };

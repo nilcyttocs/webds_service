@@ -23,8 +23,8 @@ export type WebDSService = {
     cache: {
       addApplicationHex: (packratID?: number|undefined) => Promise<void>
       addApplicationImg: (packratID?: number|undefined) => Promise<void>
-      addPrivateConfig: (packratID?: number|undefined) => Promise<void>
-      addPublicConfig: (packratID?: number|undefined) => Promise<void>
+      addPrivateConfig: (packratID?: number|undefined) => Promise<any>
+      addPublicConfig: (packratID?: number|undefined) => Promise<any>
 
     }
   }

@@ -22,7 +22,7 @@ export default async function downloadBlob(packratID, {startsWith = '', endsWith
 
     const exists = packratSession.exists(packratID);
     if (!exists) {
-      Promise.reject('Packrat does not exist');
+      return Promise.reject('Packrat does not exist');
     }
 
     const fileList = packratSession.listFiles(packratID);
@@ -47,13 +47,13 @@ export default async function downloadBlob(packratID, {startsWith = '', endsWith
     }
 
     if (!fileToDownload) {
-      Promise.reject('Packrat file does not exist');
+      return Promise.reject('Packrat file does not exist');
     }
     console.log(fileToDownload);
 
     fileBlob = packratSession.downloadFileAsBlob(packratID, fileToDownload.filename);
   } catch (error) {
-    Promise.reject(error);
+    return Promise.reject(error);
   }
   return Promise.resolve(fileBlob);
 }

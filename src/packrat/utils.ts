@@ -20,7 +20,13 @@ const _addPackratFile = async (packratID: number|undefined, {startsWith = '', en
     if (!blob) {
       Promise.reject('Downloaded empty blob');
     }
-    formData.append('blob', blob!.content, blob!.name);
+    let name: string;
+    if ((doesNotContain === 'boot' && endsWith === 'hex') || endsWith === 'img') {
+      name = 'PR' + packratID + '.' + endsWith;
+    } else {
+      name = blob!.name;
+    }
+    formData.append('blob', blob!.content, name);
   } catch (error) {
     console.error(error);
     Promise.reject('Failed to download blob from Packrat server');

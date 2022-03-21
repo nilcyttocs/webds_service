@@ -2,7 +2,7 @@ import downloadBlob, { BlobFile } from './packrat'
 
 import { requestAPI } from '../handler';
 
-import { getPackratID } from '../general/utils';
+import { getPackratID } from '../touchcomm/utils';
 
 const PACKRAT_DIR = '%2Fhome%2Fpi%2Fjupyter%2Fworkspace%2FPackrat';
 

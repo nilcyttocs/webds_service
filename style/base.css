@@ -1,0 +1,11 @@
+.jp-webds-widget {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.jp-webds-widget-body {
+    margin-top: 20px;
+    margin-left: 24px;
+    white-space: nowrap;
+}

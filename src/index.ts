@@ -5,7 +5,12 @@ import {
 
 import { Token } from '@lumino/coreutils'
 
-import { getPackratID } from './general/utils';
+import { getPackratID } from './touchcomm/utils';
+
+import {
+  getJupyterFontColor,
+  getWebDSTheme
+} from './ui/utils';
 
 import {
   addApplicationHex,
@@ -16,9 +21,6 @@ import {
 
 export type WebDSService = {
   greeting: () => void
-  general: {
-    getPackratID: () => Promise<number|undefined>
-  }
   packrat: {
     cache: {
       addApplicationHex: (packratID?: number|undefined) => Promise<void>
@@ -27,6 +29,13 @@ export type WebDSService = {
       addPublicConfig: (packratID?: number|undefined) => Promise<void>
 
     }
+  },
+  touchcomm: {
+    getPackratID: () => Promise<number|undefined>
+  },
+  ui: {
+    getJupyterFontColor: () => string
+    getWebDSTheme: () => any
   }
 };
 
@@ -46,9 +55,6 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       greeting() {
         console.log('Hello! This is WebDS Service. How may I help you?');
       },
-      general: {
-        getPackratID
-      },
       packrat: {
         cache: {
           addApplicationHex,
@@ -56,6 +62,13 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
           addPrivateConfig,
           addPublicConfig
         }
+      },
+      touchcomm: {
+        getPackratID
+      },
+      ui: {
+        getJupyterFontColor,
+        getWebDSTheme
       }
     };
   }

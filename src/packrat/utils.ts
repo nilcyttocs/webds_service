@@ -27,7 +27,7 @@ const _findEntry = (root: any, path: string[], entry: string): boolean => {
   return _findObject(array, {'name': entry}) !== undefined;
 };
 
-const _addPackratFile = async (packratID: number|undefined, fileName: string|undefined, {startsWith = '', endsWith = '', contains = '', doesNotContain = ''} = {}): Promise<void> => {
+const _addPackratFile = async (packratID: number|undefined, fileName: string|undefined, {startsWith = '', endsWith = '', contains = '', doesNotContain = ''} = {}): Promise<string> => {
   const formData = new FormData();
 
   if (!packratID) {
@@ -45,11 +45,11 @@ const _addPackratFile = async (packratID: number|undefined, fileName: string|und
     console.log(packratDir);
     if (_findEntry(packratDir, [packratID!.toString()], fileName)) {
       console.log('Found Packrat/' + packratID + '/' + fileName);
-      return Promise.resolve();
+      return Promise.resolve('Packrat/' + packratID + '/' + fileName);
     }
     if (_findEntry(packratDir, ['Cache', packratID!.toString()], fileName)) {
       console.log('Found Packrat/Cache/' + packratID + '/' + fileName);
-      return Promise.resolve();
+      return Promise.resolve('Packrat/Cache/' + packratID + '/' + fileName);
     }
   } catch (error) {
     console.error(`Error - GET /webds/filesystem?dir=${PACKRAT_DIR}\n${error}`);
@@ -76,22 +76,60 @@ const _addPackratFile = async (packratID: number|undefined, fileName: string|und
     console.error(`Error - POST /webds/packrat/${packratID}\n${error}`);
     return Promise.reject('Failed to upload blob to Packrat cache');
   }
-
-  return Promise.resolve();
+  return Promise.resolve('Packrat/Cache/' + packratID + '/' + fileName);
 };
 
-export const addApplicationHex = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, undefined, {doesNotContain: 'boot', endsWith: 'hex'});
+export const addApplicationHex = (packratID?: number): Promise<string> => {
+  return _addPackratFile(packratID, undefined, {doesNotContain: 'boot', endsWith: 'hex'});
 };
 
-export const addApplicationImg = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, undefined, {endsWith: 'img'});
+export const addApplicationIHex = (packratID?: number): Promise<string> => {
+  try {
+    return _addPackratFile(packratID, undefined, {startsWith: 's', endsWith: 'ihex.hex'});
+  } catch {}
+
+  return _addPackratFile(packratID, undefined, {startsWith: 't', endsWith: 'ihex.hex'});
 };
 
-export const addPrivateConfig = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, 'config_private.json', {startsWith: 'config', contains: 'private', endsWith: 'json'});
+export const addApplicationImg = (packratID?: number): Promise<string> => {
+  return _addPackratFile(packratID, undefined, {endsWith: 'img'});
 };
 
-export const addPublicConfig = async (packratID?: number): Promise<void> => {
-  return await _addPackratFile(packratID, 'config.json', {startsWith: 'config', doesNotContain: 'private', endsWith: 'json'});
+export const addPrivateConfig = (packratID?: number): Promise<string> => {
+  return _addPackratFile(packratID, 'config_private.json', {startsWith: 'config', contains: 'private', endsWith: 'json'});
+};
+
+export const addPublicConfig = (packratID?: number): Promise<string> => {
+  return _addPackratFile(packratID, 'config.json', {startsWith: 'config', doesNotContain: 'private', endsWith: 'json'});
+};
+
+export const addPackratFiles = (files: string[], packratID?: number): Promise<any[]> => {
+  const addedFiles: any[] = [];
+  files.map(file => {
+    try {
+      switch (file) {
+        case 'hex':
+          addedFiles.push(addApplicationHex(packratID));
+          break;
+        case 'ihex':
+          addedFiles.push(addApplicationIHex(packratID));
+          break;
+        case 'img':
+          addedFiles.push(addApplicationImg(packratID));
+          break;
+        case 'config_private':
+          addedFiles.push(addPrivateConfig(packratID));
+          break;
+        case 'config_public':
+          addedFiles.push(addPublicConfig(packratID));
+          break;
+        default:
+          addedFiles.push('invalid');
+          break;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  });
+  return Promise.all(addedFiles);
 };

@@ -14,20 +14,23 @@ import {
 
 import {
   addApplicationHex,
+  addApplicationIHex,
   addApplicationImg,
   addPrivateConfig,
-  addPublicConfig
+  addPublicConfig,
+  addPackratFiles
 } from './packrat/utils';
 
 export type WebDSService = {
   greeting: () => void
   packrat: {
     cache: {
-      addApplicationHex: (packratID?: number|undefined) => Promise<void>
-      addApplicationImg: (packratID?: number|undefined) => Promise<void>
-      addPrivateConfig: (packratID?: number|undefined) => Promise<void>
-      addPublicConfig: (packratID?: number|undefined) => Promise<void>
-
+      addApplicationHex: (packratID?: number|undefined) => Promise<string>
+      addApplicationIHex: (packratID?: number|undefined) => Promise<string>
+      addApplicationImg: (packratID?: number|undefined) => Promise<string>
+      addPrivateConfig: (packratID?: number|undefined) => Promise<string>
+      addPublicConfig: (packratID?: number|undefined) => Promise<string>
+      addPackratFiles: (files: string[], packratID?: number|undefined) => Promise<string[]>
     }
   },
   touchcomm: {
@@ -58,9 +61,11 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       packrat: {
         cache: {
           addApplicationHex,
+          addApplicationIHex,
           addApplicationImg,
           addPrivateConfig,
-          addPublicConfig
+          addPublicConfig,
+          addPackratFiles
         }
       },
       touchcomm: {

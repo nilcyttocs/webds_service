@@ -5,13 +5,6 @@ import {
 
 import { Token } from '@lumino/coreutils'
 
-import { getPackratID } from './touchcomm/utils';
-
-import {
-  getJupyterFontColor,
-  getWebDSTheme
-} from './ui/utils';
-
 import {
   addApplicationHex,
   addApplicationIHex,
@@ -20,6 +13,16 @@ import {
   addPublicConfig,
   addPackratFiles
 } from './packrat/utils';
+
+import {
+  getPackratID,
+  getPartNumber
+} from './touchcomm/utils';
+
+import {
+  getJupyterFontColor,
+  getWebDSTheme
+} from './ui/utils';
 
 export type WebDSService = {
   greeting: () => void
@@ -34,7 +37,8 @@ export type WebDSService = {
     }
   },
   touchcomm: {
-    getPackratID: () => Promise<number|undefined>
+    getPackratID: () => Promise<number>
+    getPartNumber: () => Promise<string>
   },
   ui: {
     getJupyterFontColor: () => string
@@ -69,7 +73,8 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         }
       },
       touchcomm: {
-        getPackratID
+        getPackratID,
+        getPartNumber
       },
       ui: {
         getJupyterFontColor,

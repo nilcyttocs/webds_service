@@ -83,9 +83,10 @@ export const addApplicationHex = (packratID?: number): Promise<string> => {
   return _addPackratFile(packratID, undefined, {doesNotContain: 'boot', endsWith: 'hex'});
 };
 
-export const addApplicationIHex = (packratID?: number): Promise<string> => {
+export const addApplicationIHex = async (packratID?: number): Promise<string> => {
   try {
-    return _addPackratFile(packratID, undefined, {startsWith: 's', endsWith: 'ihex.hex'});
+    const multi = await _addPackratFile(packratID, undefined, {startsWith: 's', endsWith: 'ihex.hex'});
+    return multi;
   } catch {}
 
   return _addPackratFile(packratID, undefined, {startsWith: 't', endsWith: 'ihex.hex'});

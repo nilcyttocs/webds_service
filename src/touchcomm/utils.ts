@@ -23,7 +23,7 @@ export const getPackratID = async (): Promise<number> => {
 export const getPartNumber = async (): Promise<string> => {
   try {
     const identify = await getIdentify();
-    const partNumber = (identify.partNumber.split('-'))[0].toUpperCase();
+    const partNumber = identify.partNumber.toUpperCase().replace(/\0/g, '');
     console.log(`Part Number = ${partNumber}`);
     return partNumber;
   } catch (error) {

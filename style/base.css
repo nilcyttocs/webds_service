@@ -9,3 +9,7 @@
     margin-left: 24px;
     white-space: nowrap;
 }
+
+button:focus-visible {
+    border: none !important;
+}

@@ -4,7 +4,7 @@ import { requestAPI } from '../handler';
 
 import { getPackratID } from '../touchcomm/utils';
 
-const PACKRAT_DIR = '%2Fhome%2Fpi%2Fjupyter%2Fworkspace%2FPackrat';
+const PACKRAT_DIR = '%2Fhome%2Fdsdkuser%2Fjupyter%2Fworkspace%2FPackrat';
 
 const _findObject = (array: any[], keyValue: any): any => {
   const result = array.filter(function(object) {

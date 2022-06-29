@@ -1,18 +1,25 @@
 import { createTheme, ThemeOptions } from "@mui/material/styles";
 
-import webdsTheme from './mui_theme';
-
-const theme = webdsTheme as ThemeOptions;
+import webdsTheme from "./mui_theme";
 
 export const getJupyterFontColor = (): string => {
-  return window.getComputedStyle(document.documentElement).getPropertyValue('--jp-ui-font-color1').trim();
+  return window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue("--jp-ui-font-color1")
+    .trim();
 };
 
 export const getWebDSTheme = (): any => {
-  if (window.getComputedStyle(document.documentElement).getPropertyValue('--jp-layout-color0').includes('white')) {
-    theme.palette!.mode = 'light';
+  let mode: string;
+  if (
+    window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue("--jp-layout-color0")
+      .includes("white")
+  ) {
+    mode = "light";
   } else {
-    theme.palette!.mode = 'dark';
+    mode = "dark";
   }
-  return createTheme(theme);
+  return createTheme(webdsTheme(mode) as ThemeOptions);
 };

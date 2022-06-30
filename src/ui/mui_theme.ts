@@ -33,6 +33,8 @@ const webdsTheme = (mode: string) => ({
       },
       styleOverrides: {
         root: {
+          minWidth: "0px",
+          minHeight: "0px",
           textTransform: "none"
         }
       }

@@ -8,7 +8,8 @@ import { focusTracker } from "../index";
 
 const saveImageWidgets = [
   "webds_config_editor_widget",
-  "webds_gear_selection_widget"
+  "webds_gear_selection_widget",
+  "webds_sensor_mapping_widget"
 ];
 
 const toHex = (str: string): string => {
@@ -26,7 +27,7 @@ const saveByteArray = (fileName: string, input: any) => {
   let output = fileName;
   link.download = output;
   link.click();
-}
+};
 
 const saveApplicationImage = async () => {
   try {
@@ -46,27 +47,31 @@ const saveApplicationImage = async () => {
     window.alert("Failed to retrieve packrat ID.");
     return;
   }
-  const dataToSend: any = {
-    packrat_id: "" + packratID
-  };
   let configID: string;
+  const dataToSend: any = {
+    command: "getAppInfo"
+  };
   try {
-    const response = await requestAPI<any>("command?query=app-info");
+    const response = await requestAPI<any>("command", {
+      body: JSON.stringify(dataToSend),
+      method: "POST"
+    });
     configID = toHex(response.customerConfigId);
   } catch (error) {
-    console.error(`Error - GET /webds/command?query=app-info\n${error}`);
+    console.error(`Error - POST /webds/command\n${dataToSend}\n${error}`);
     window.alert("Failed to retrieve config ID.");
     return;
   }
   try {
-    const response = await requestAPI<any>("image", {
-      body: JSON.stringify(dataToSend),
-      method: "POST"
-    });
+    const response = await requestAPI<any>(
+      `packrat/${packratID}/PR${packratID}.img?type=updated`
+    );
     const byteArray = new Uint8Array(response.data);
     saveByteArray(`PR${packratID}_${configID}.img`, byteArray.buffer);
   } catch (error) {
-    console.error(`Error - POST /webds/image\n${error}`);
+    console.error(
+      `Error - GET /webds/packrat/${packratID}/PR${packratID}.img?type=updated\n${error}`
+    );
     window.alert("Failed to generate new application image.");
   }
 };

@@ -20,9 +20,22 @@ import {
   addPackratFiles
 } from "./packrat/utils";
 
+import { getOSInfo, pollOSInfo } from "./pinormos/utils";
+
 import { getPackratID, getPartNumber } from "./touchcomm/utils";
 
 import { getJupyterFontColor, getWebDSTheme } from "./ui/utils";
+
+export interface OSInfo {
+  current: {
+    version: string;
+  };
+  repo: {
+    version: string;
+    tarball: string;
+    manifest: string;
+  };
+}
 
 export type WebDSService = {
   greeting: () => void;
@@ -38,6 +51,9 @@ export type WebDSService = {
         packratID?: number | undefined
       ) => Promise<string[]>;
     };
+  };
+  pinormos: {
+    getOSInfo: () => OSInfo;
   };
   touchcomm: {
     getPackratID: () => Promise<number>;
@@ -77,6 +93,8 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
     const { commands } = app;
     commands.addCommand("webds_service_save_image:main_menu", commandSaveImage);
 
+    pollOSInfo();
+
     return {
       greeting() {
         console.log("Hello! This is WebDS Service. How may I help you?");
@@ -90,6 +108,9 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
           addPublicConfig,
           addPackratFiles
         }
+      },
+      pinormos: {
+        getOSInfo
       },
       touchcomm: {
         getPackratID,

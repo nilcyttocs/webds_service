@@ -74,9 +74,54 @@ export const focusTracker: FocusTracker<WebDSWidget> = new FocusTracker();
 export class WebDSWidget<
   T extends ReactWidget = ReactWidget
 > extends MainAreaWidget {
+  private widgetContainer: any;
+  private widgetContent: any;
+  private isScrolling = false;
+
   constructor(options: MainAreaWidget.IOptions<T>) {
     super(options);
     focusTracker.add(this);
+  }
+
+  private _setShadows(event: any) {
+    if (!this.isScrolling) {
+      window.requestAnimationFrame(() => {
+        if (event.target.scrollTop > 0) {
+          this.widgetContainer.classList.add("off-top");
+        } else {
+          this.widgetContainer.classList.remove("off-top");
+        }
+        if (
+          Math.abs(
+            event.target.scrollHeight -
+              event.target.clientHeight -
+              event.target.scrollTop
+          ) > 3
+        ) {
+          this.widgetContainer.classList.add("off-bottom");
+        } else {
+          this.widgetContainer.classList.remove("off-bottom");
+        }
+        this.isScrolling = false;
+      });
+      this.isScrolling = true;
+    }
+  }
+
+  setShadows() {
+    this.widgetContainer = document.getElementById(this.id + "_container");
+    this.widgetContent = document.getElementById(this.id + "_content");
+    if (this.widgetContainer && this.widgetContent) {
+      this.widgetContent.addEventListener(
+        "scroll",
+        this._setShadows.bind(this)
+      );
+      setTimeout(() => {
+        if (this.widgetContent.scrollHeight > this.widgetContent.clientHeight) {
+          this.widgetContainer.classList.add("off-bottom");
+        }
+      }, 100);
+    }
   }
 }
 

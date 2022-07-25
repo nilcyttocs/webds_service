@@ -77,10 +77,13 @@ export class WebDSWidget<
   private widgetContainer: any;
   private widgetContent: any;
   private isScrolling = false;
+  private iframe = document.createElement("iframe");
 
   constructor(options: MainAreaWidget.IOptions<T>) {
     super(options);
     focusTracker.add(this);
+    this.iframe.style.cssText =
+      "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
   }
 
   private _setShadows(event: any) {
@@ -108,12 +111,29 @@ export class WebDSWidget<
     }
   }
 
+  private _addIframeResizeDetection() {
+    this.iframe.onload = () => {
+      this.iframe.contentWindow?.addEventListener("resize", () => {
+        try {
+          var evt = new UIEvent("resize");
+          this.iframe.parentElement?.dispatchEvent(evt);
+        } catch (e) {}
+      });
+    };
+    this.widgetContent.appendChild(this.iframe);
+  }
+
   setShadows() {
     this.widgetContainer = document.getElementById(this.id + "_container");
     this.widgetContent = document.getElementById(this.id + "_content");
     if (this.widgetContainer && this.widgetContent) {
+      this._addIframeResizeDetection();
       this.widgetContent.addEventListener(
         "scroll",
+        this._setShadows.bind(this)
+      );
+      this.widgetContent.addEventListener(
+        "resize",
         this._setShadows.bind(this)
       );
       setTimeout(() => {

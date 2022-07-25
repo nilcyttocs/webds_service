@@ -1,6 +1,8 @@
-import { OSInfo } from "../index";
-
 import { requestAPI } from "../handler";
+
+import { focusTracker, OSInfo } from "../index";
+
+const streamingWidgets = ["webds_heatmap_widget", "webds_touch_widget"];
 
 const repoListURL =
   "http://bora:8082/service/rest/v1/search/assets?sort=name&direction=desc&repository=PinormOS";
@@ -59,6 +61,12 @@ const checkRepo = async (osInfo: OSInfo) => {
 };
 
 export const pollOSInfo = async () => {
+  if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
+    if (streamingWidgets.includes(focusTracker.currentWidget.id)) {
+      setTimeout(pollOSInfo, 1000);
+      return;
+    }
+  }
   try {
     const data = await requestAPI<any>("about?query=os-info");
     osInfo.current.version = data["VERSION_ID"].replace(/\"/g, "");

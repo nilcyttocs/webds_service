@@ -23,3 +23,23 @@ export const getWebDSTheme = (): any => {
   }
   return createTheme(webdsTheme(mode) as ThemeOptions);
 };
+
+let webdsLauncher: any;
+
+export const getWebDSLauncher = (): any => {
+  return webdsLauncher;
+};
+
+export const setWebDSLauncher = (launcher: any) => {
+  webdsLauncher = launcher;
+};
+
+let webdsLauncherModel: any;
+
+export const getWebDSLauncherModel = (): any => {
+  return webdsLauncherModel;
+};
+
+export const setWebDSLauncherModel = (launcherModel: any) => {
+  webdsLauncherModel = launcherModel;
+};

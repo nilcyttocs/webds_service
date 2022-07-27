@@ -24,7 +24,14 @@ import { getOSInfo, pollOSInfo } from "./pinormos/utils";
 
 import { getPackratID, getPartNumber } from "./touchcomm/utils";
 
-import { getJupyterFontColor, getWebDSTheme } from "./ui/utils";
+import {
+  getJupyterFontColor,
+  getWebDSLauncher,
+  getWebDSLauncherModel,
+  getWebDSTheme,
+  setWebDSLauncher,
+  setWebDSLauncherModel
+} from "./ui/utils";
 
 export interface OSInfo {
   current: {
@@ -61,7 +68,11 @@ export type WebDSService = {
   };
   ui: {
     getJupyterFontColor: () => string;
+    getWebDSLauncher: () => any;
+    getWebDSLauncherModel: () => any;
     getWebDSTheme: () => any;
+    setWebDSLauncher: (launcher: any) => void;
+    setWebDSLauncherModel: (launcherModel: any) => void;
   };
 };
 
@@ -183,7 +194,11 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       },
       ui: {
         getJupyterFontColor,
-        getWebDSTheme
+        getWebDSLauncher,
+        getWebDSLauncherModel,
+        getWebDSTheme,
+        setWebDSLauncher,
+        setWebDSLauncherModel
       }
     };
   }

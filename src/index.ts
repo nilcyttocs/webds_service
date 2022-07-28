@@ -70,7 +70,7 @@ export type WebDSService = {
     getJupyterFontColor: () => string;
     getWebDSLauncher: () => any;
     getWebDSLauncherModel: () => any;
-    getWebDSTheme: () => any;
+    getWebDSTheme: (inverted?: any) => any;
     setWebDSLauncher: (launcher: any) => void;
     setWebDSLauncherModel: (launcherModel: any) => void;
   };

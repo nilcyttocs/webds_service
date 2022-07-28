@@ -9,7 +9,7 @@ export const getJupyterFontColor = (): string => {
     .trim();
 };
 
-export const getWebDSTheme = (): any => {
+export const getWebDSTheme = ({inverted = false} = {}) : any => {
   let mode: string;
   if (
     window
@@ -17,9 +17,9 @@ export const getWebDSTheme = (): any => {
       .getPropertyValue("--jp-layout-color0")
       .includes("white")
   ) {
-    mode = "light";
+    mode = inverted ? "dark" : "light";
   } else {
-    mode = "dark";
+    mode = inverted ? "light" : "dark";
   }
   return createTheme(webdsTheme(mode) as ThemeOptions);
 };

@@ -33,6 +33,9 @@ import {
   setWebDSLauncherModel
 } from "./ui/utils";
 
+export { ReflashWidget } from "./widgets/reflash/widget";
+export { SensorMappingWidget } from "./widgets/sensor_mapping/widget";
+
 export interface OSInfo {
   current: {
     version: string;

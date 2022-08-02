@@ -42,8 +42,11 @@ export interface OSInfo {
   };
   repo: {
     version: string;
-    tarball: string;
-    manifest: string;
+    tarballUrl: string;
+    tarballName: string;
+    manifestUrl: string;
+    manifestName: string;
+    downloaded: boolean;
   };
 }
 

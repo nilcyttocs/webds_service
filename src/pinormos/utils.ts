@@ -109,6 +109,7 @@ const downloadTarball = async () => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set("Content-Type", "application/x-tgz");
 
+  console.log(`Downloading tarball from ${osInfo.repo.tarballUrl}`);
   let request = new Request(osInfo.repo.tarballUrl, {
     method: "GET",
     mode: "cors",
@@ -126,6 +127,7 @@ const downloadTarball = async () => {
   const tarballFile = new File([tarballBlob], osInfo.repo.tarballName);
   console.log(tarballFile);
 
+  console.log(`Downloading manifest from ${osInfo.repo.manifestUrl}`);
   request = new Request(osInfo.repo.manifestUrl, {
     method: "GET",
     mode: "cors",
@@ -142,11 +144,11 @@ const downloadTarball = async () => {
   const manifestFile = new File([manifestBlob], osInfo.repo.manifestName);
   console.log(manifestFile);
 
+  console.log("Uploading tarball and manifest to dropbox");
   const formData = new FormData();
   formData.append("files", tarballFile);
   formData.append("files", manifestFile);
   formData.append("location", dropboxLocation);
-
   try {
     await requestAPI<any>("filesystem", {
       body: formData,

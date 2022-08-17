@@ -10,10 +10,12 @@ const webdsTheme = (mode: string) => ({
     section:
       mode === "light"
         ? {
-            main: "rgba(0, 0, 0, 0.04)"
+            main: "#f5f5f5",
+            border: "#e0e0e0"
           }
         : {
-            main: "rgba(255, 255, 255, 0.04)"
+            main: "#212121",
+            border: "#616161"
           }
   },
 

@@ -7,6 +7,11 @@ const webdsTheme = (mode: string) => ({
       dark: "#005192",
       contrastText: "#fff"
     },
+    colors: {
+      green: "#00e676",
+      grey: "#9e9e9e",
+      red: "#d50000"
+    },
     section:
       mode === "light"
         ? {

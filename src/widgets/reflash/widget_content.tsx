@@ -22,8 +22,6 @@ import DehazeOutlinedIcon from '@mui/icons-material/DehazeOutlined';
 import { requestAPI } from '../../handler';
 import { WebDSService } from '../../index';
 import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from '@mui/material/CssBaseline';
-
 
 const PACKRAT_WIDTH = 225
 
@@ -311,7 +309,6 @@ export const ShowContent = (props: Props): JSX.Element => {
     return (
         <div>
             <ThemeProvider theme={webdsTheme}>
-                <CssBaseline />
             <Collapse in={isAlert}>
                 <Alert severity={severity} onClose={() => setAlert(false)}>
                     <AlertTitle> {result} </AlertTitle>
@@ -364,10 +361,12 @@ export const ShowContent = (props: Props): JSX.Element => {
                     display: 'flex',
                     alignItems: "center",
                     width: 275
-                }}>
-                    <Typography sx={{ m: 1, textAlign: 'center' }}>
-                        {open ? "Image Files" : "Packrat"}
-                    </Typography>
+                    }}>
+                        <Paper elevation={0} sx={{ bgcolor: 'transparent' }}>
+                        <Typography sx={{ m: 1, textAlign: 'center' }}>
+                            {open ? "Image Files" : "Packrat"}
+                        </Typography>
+                    </Paper>
 
                     {open ?
                         <Paper variant="outlined" sx={{ m: 0, p: 0, minWidth: 265, /*minHeight: 42*/ }}>

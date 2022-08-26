@@ -151,6 +151,5 @@ export const extensionConst = {
     }
   },
   steps: 4,
-  buttonApplyId: "button-stepper-apply",
-  buttonControlId: "button-control-apply"
+  buttonApplyId: "button-stepper-apply"
 };

@@ -63,6 +63,7 @@ export default function WidgetControl(props: any) {
           </Button>
 
           <Button
+            variant="contained"
             onClick={handleApply}
             sx={{ width: 160 }}
             disabled={props.status}

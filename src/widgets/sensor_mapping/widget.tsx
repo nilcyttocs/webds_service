@@ -4,7 +4,6 @@ import {
   Stack,
   Paper,
   Typography,
-  Backdrop,
   CircularProgress
 } from "@mui/material";
 
@@ -19,6 +18,7 @@ const WIDGET_HEIGHT_CONTROLS = 70;
 export function SensorMappingWidget(props: any) {
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState(false);
+  const [initState, setInitState] = useState(false);
 
   function ShowTitle(title: string) {
     return (
@@ -54,6 +54,10 @@ export function SensorMappingWidget(props: any) {
     setStatus(status);
   }
 
+  function updateInitState(status: boolean) {
+    setInitState(status);
+  }
+
   function ShowContent() {
     return (
       <>
@@ -62,6 +66,7 @@ export function SensorMappingWidget(props: any) {
           step={step}
           updateStep={updateStep}
           updateStatus={updateStatus}
+		  updateInitState={updateInitState}
         />
       </>
     );
@@ -86,10 +91,24 @@ export function SensorMappingWidget(props: any) {
           alignItems="stretch"
           sx={{
             width: WIDGET_WIDTH + "px",
-            bgcolor: "section.main"
+            bgcolor: "section.main",
+			position: "relative",
+            display: "inline-flex"
           }}
         >
           {ShowContent()}
+		  { !initState &&
+			<div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)"
+              }}
+            >
+              <CircularProgress color="primary" />
+			</div>
+          }
         </Stack>
         <Stack
           direction="column"
@@ -101,7 +120,7 @@ export function SensorMappingWidget(props: any) {
             bgcolor: "section.main"
           }}
         >
-          {ShowControl()}
+          { initState && ShowControl() }
         </Stack>
       </Stack>
     );
@@ -112,15 +131,7 @@ export function SensorMappingWidget(props: any) {
   return (
     <div className="jp-webds-widget-body">
       <ThemeProvider theme={webdsTheme}>
-        {showAll()}
-        <div>
-          <Backdrop
-            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            open={false}
-          >
-            <CircularProgress color="inherit" />
-          </Backdrop>
-        </div>
+		{ showAll() }
       </ThemeProvider>
     </div>
   );

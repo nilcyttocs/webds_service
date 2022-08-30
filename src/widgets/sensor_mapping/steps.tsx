@@ -17,8 +17,6 @@ import {
   Typography,
   Snackbar,
   Alert,
-  Backdrop,
-  CircularProgress,
   InputBase,
   styled
 } from "@mui/material";
@@ -58,6 +56,7 @@ interface ISteppr {
   step: any;
   service: any;
   updateStatus: any;
+  updateInitState: any;
 }
 
 interface IAlertInfo {
@@ -118,13 +117,13 @@ export default function VerticalStepper(props: ISteppr) {
   const [ydir, setYdir] = useState<number[]>([]);
   const [xTrx, setXTrx] = useState("");
   const [defaultSelect, setDefaultSelect] = useState("");
+  const [initState, setInitState] = useState(false);
 
   const [bankingListAll, setBankingListAll] = useState([]);
   const [bankingSchemeConfig, setBankingSchemeConfig] = useState([]);
 
   const [needReset, setNeedReset] = useState(false);
-  const [isReady, setReady] = useState(false);
-  const [isProcessing, setProcessing] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
   const [openAlert, setOpenAlert] = useState<IAlertInfo>({
     state: false,
     message: "",
@@ -170,12 +169,16 @@ export default function VerticalStepper(props: ISteppr) {
   }, [txCount, rxCount, xdir, ydir]);
 
   useEffect(() => {
-    if (txCountError || rxCountError || txError || rxError) {
+    props.updateInitState(initState);
+  }, [initState]);
+
+  useEffect(() => {
+    if (txCountError || rxCountError || txError || rxError || !dataReady) {
       props.updateStatus(true);
     } else {
       props.updateStatus(false);
     }
-  }, [txCountError, rxCountError, txError, rxError, props]);
+  }, [txCountError, rxCountError, txError, rxError, props, dataReady]);
 
   const Identify = async (): Promise<string> => {
     let partNumber: string = "none";
@@ -198,7 +201,7 @@ export default function VerticalStepper(props: ISteppr) {
       console.log(error);
       return Promise.reject(`identify failed: ${error.toString()}`);
     }
- 
+
     return Promise.resolve(partNumber);
   };
 
@@ -346,18 +349,24 @@ export default function VerticalStepper(props: ISteppr) {
 
     try {
       data.dir.forEach((value) => {
-        if (!data.bk.includes(value)) {
-          ret.info = "Invalid " + value.toString();
-          ret.status = true;
-          throw BreakException;
-        }
+        if (value === 0) {
 
-        if (singleCheck.includes(value)) {
-          ret.info = "mutilple " + value.toString();
-          ret.status = true;
-          throw BreakException;
         }
-        singleCheck.push(value);
+        else
+        {
+          if (!data.bk.includes(value)) {
+            ret.info = "Invalid " + value.toString();
+            ret.status = true;
+            throw BreakException;
+          }
+
+          if (singleCheck.includes(value)) {
+            ret.info = "mutilple " + value.toString();
+            ret.status = true;
+            throw BreakException;
+          }
+          singleCheck.push(value);
+        }
       });
     } catch (e) {
       return ret;
@@ -587,7 +596,7 @@ export default function VerticalStepper(props: ISteppr) {
 			updateTxMapping(tx.slice(0, txlen).toString());
 			updateRxMapping(rx.slice(0, rxlen).toString());
 
-			setReady(true);
+			setDataReady(true);
 		})
 		.catch(err => {
 			console.log(err);
@@ -596,7 +605,7 @@ export default function VerticalStepper(props: ISteppr) {
 		})
 		.finally(() => {
 		   updateLatestStatus();
-		   setProcessing(false);
+		   setInitState(true);
 		})
   };
 
@@ -807,7 +816,6 @@ export default function VerticalStepper(props: ISteppr) {
       newStatus[StepIndex.Banking] = 1;
     }
 
-    console.log("QMAO", newStatus);
     dataToSend = {
       txCount: txCount,
       rxCount: rxCount,
@@ -935,16 +943,14 @@ export default function VerticalStepper(props: ISteppr) {
           value={xTrx}
           onChange={handleAxesChange}
         >
-          <FormControlLabel
-            value={"TX"}
-            control={<Radio />}
-            label="Tx on X-axis"
-          />
-          <FormControlLabel
-            value={"RX"}
-            control={<Radio />}
-            label="Rx on X-axis"
-          />
+          <Stack direction="row" justifyContent="center" alignItems="center">
+            <FormControlLabel value={"TX"} control={<Radio />} label="" />
+            <Typography>Tx on X-axis</Typography>
+          </Stack>
+          <Stack direction="row" justifyContent="center" alignItems="center">
+            <FormControlLabel value={"RX"} control={<Radio />} label="" />
+            <Typography>Rx on X-axis</Typography>
+          </Stack>
         </RadioGroup>
       </FormControl>
     );
@@ -1039,7 +1045,7 @@ export default function VerticalStepper(props: ISteppr) {
     );
   }
   */
- 
+
   const steps = [
     {
       label: "TX/RX Number",
@@ -1077,6 +1083,7 @@ export default function VerticalStepper(props: ISteppr) {
       spacing={2}
       sx={{ width: 500 }}
     >
+	 { initState && dataReady &&
       <Stepper
         nonLinear
         activeStep={activeStep}
@@ -1102,17 +1109,11 @@ export default function VerticalStepper(props: ISteppr) {
           </Step>
         ))}
       </Stepper>
+	  }
 
       {displayAlert()}
 
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={isProcessing}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-
-      {isReady && (
+      {dataReady && (
         <Button
           id={extensionConst.buttonApplyId}
           sx={{ width: 0, height: 0, p: 0, m: 0, b: 0 }}

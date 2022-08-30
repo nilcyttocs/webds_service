@@ -9,6 +9,7 @@ export default function WidgetContent(props: any) {
   const [axis, setAxis] = useState(false);
   const [xdir, setXdir] = useState<number[]>([1, 2, 3, 4, 5, 6]);
   const [ydir, setYdir] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  const [initState, setInitState] = useState(false);
 
   function updateX(x: any) {
     setXdir(x);
@@ -30,10 +31,15 @@ export default function WidgetContent(props: any) {
     props.updateStatus(status);
   }
 
+  function updateInitState(status: any) {
+	setInitState(status);
+    props.updateInitState(status);
+  }
+
   return (
     <Stack
       direction="row"
-      justifyContent="center"
+      justifyContent="flex-start"
       alignItems="stretch"
       sx={{ minHeight: 480 }}
     >
@@ -46,12 +52,17 @@ export default function WidgetContent(props: any) {
           updateY={updateY}
           updateAxis={updateAxis}
           updateStatus={updateStatus}
+		  updateInitState={updateInitState}
         />
-        <Divider orientation="vertical" flexItem />
       </Stack>
-      <Stack direction="row" sx={{ pt: 5, pb: 5 }}>
-        <WidgetSensor xdir={xdir} ydir={ydir} axis={axis} />
-      </Stack>
+	  	{ initState &&
+		  <>
+            <Divider orientation="vertical" flexItem />
+            <Stack direction="row" sx={{ pt: 5, pb: 5 }}>
+              <WidgetSensor xdir={xdir} ydir={ydir} axis={axis} />
+            </Stack>
+		  </>
+	  	}
     </Stack>
   );
 }

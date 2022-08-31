@@ -7,7 +7,9 @@ const DROPBOX_DIR = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
 const dropboxLocation = "/var/spool/syna/softwareupdater";
 
 const repoListURL =
-  "http://bora:8082/service/rest/v1/search/assets?sort=name&direction=desc&repository=PinormOS";
+  "http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&sort=name&direction=desc";
+
+const pollOSInfoPeriod = 2 * 60 * 1000;
 
 const streamingWidgets = ["webds_heatmap_widget", "webds_touch_widget"];
 
@@ -163,7 +165,7 @@ const downloadTarball = async () => {
 export const pollOSInfo = async () => {
   if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
     if (streamingWidgets.includes(focusTracker.currentWidget.id)) {
-      setTimeout(pollOSInfo, 1000);
+      setTimeout(pollOSInfo, pollOSInfoPeriod);
       return;
     }
   }
@@ -199,7 +201,7 @@ export const pollOSInfo = async () => {
     }
   }
 
-  setTimeout(pollOSInfo, 1000);
+  setTimeout(pollOSInfo, pollOSInfoPeriod);
 };
 
 export const getOSInfo = (): OSInfo => {

@@ -157,7 +157,7 @@ export class WebDSWidget<
         if (this.widgetContent.scrollHeight > this.widgetContent.clientHeight) {
           this.widgetContainer.classList.add("off-bottom");
         }
-      }, 200);
+      }, 500);
     }
   }
 }

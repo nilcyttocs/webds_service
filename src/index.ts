@@ -93,13 +93,17 @@ export class WebDSWidget<
 > extends MainAreaWidget {
   private widgetContainer: any;
   private widgetContent: any;
+  private widgetBody: any;
   private isScrolling = false;
-  private iframe = document.createElement("iframe");
+  private oIframe = document.createElement("iframe");
+  private iIframe = document.createElement("iframe");
 
   constructor(options: MainAreaWidget.IOptions<T>) {
     super(options);
     focusTracker.add(this);
-    this.iframe.style.cssText =
+    this.oIframe.style.cssText =
+      "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
+    this.iIframe.style.cssText =
       "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
   }
 
@@ -129,21 +133,31 @@ export class WebDSWidget<
   }
 
   private _addIframeResizeDetection() {
-    this.iframe.onload = () => {
-      this.iframe.contentWindow?.addEventListener("resize", () => {
+    this.oIframe.onload = () => {
+      this.oIframe.contentWindow?.addEventListener("resize", () => {
         try {
           var evt = new UIEvent("resize");
-          this.iframe.parentElement?.dispatchEvent(evt);
+          this.oIframe.parentElement?.dispatchEvent(evt);
         } catch (e) {}
       });
     };
-    this.widgetContent.appendChild(this.iframe);
+    this.iIframe.onload = () => {
+      this.iIframe.contentWindow?.addEventListener("resize", () => {
+        try {
+          var evt = new UIEvent("resize");
+          this.iIframe.parentElement?.parentElement?.dispatchEvent(evt);
+        } catch (e) {}
+      });
+    };
+    this.widgetContent.appendChild(this.oIframe);
+    this.widgetBody.appendChild(this.iIframe);
   }
 
   setShadows() {
     this.widgetContainer = document.getElementById(this.id + "_container");
     this.widgetContent = document.getElementById(this.id + "_content");
-    if (this.widgetContainer && this.widgetContent) {
+    this.widgetBody = this.widgetContent.querySelector(".jp-webds-widget-body");
+    if (this.widgetContainer && this.widgetContent && this.widgetBody) {
       this._addIframeResizeDetection();
       this.widgetContent.addEventListener(
         "scroll",

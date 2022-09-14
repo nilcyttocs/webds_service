@@ -21,7 +21,7 @@ import {
   getCfgFile
 } from "./packrat/utils";
 
-import { getOSInfo, pollOSInfo } from "./pinormos/utils";
+import { getOSInfo, isExternal, pollOSInfo } from "./pinormos/utils";
 
 import { getPackratID, getPartNumber } from "./touchcomm/utils";
 
@@ -71,6 +71,7 @@ export type WebDSService = {
   };
   pinormos: {
     getOSInfo: () => OSInfo;
+    isExternal: () => boolean;
   };
   touchcomm: {
     getPackratID: () => Promise<number>;
@@ -213,7 +214,8 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         }
       },
       pinormos: {
-        getOSInfo
+        getOSInfo,
+        isExternal
       },
       touchcomm: {
         getPackratID,

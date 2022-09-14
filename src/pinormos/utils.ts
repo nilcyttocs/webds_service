@@ -207,3 +207,7 @@ export const pollOSInfo = async () => {
 export const getOSInfo = (): OSInfo => {
   return osInfo;
 };
+
+export const isExternal = (): boolean => {
+  return osInfo.current.version.endsWith("E");
+};

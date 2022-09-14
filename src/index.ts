@@ -17,7 +17,8 @@ import {
   addApplicationImg,
   addPrivateConfig,
   addPublicConfig,
-  addPackratFiles
+  addPackratFiles,
+  getCfgFile
 } from "./packrat/utils";
 
 import { getOSInfo, pollOSInfo } from "./pinormos/utils";
@@ -63,6 +64,9 @@ export type WebDSService = {
         files: string[],
         packratID?: number | undefined
       ) => Promise<string[]>;
+    };
+    fetch: {
+      getCfgFile: (packratID?: number | undefined) => Promise<string>;
     };
   };
   pinormos: {
@@ -203,6 +207,9 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
           addPrivateConfig,
           addPublicConfig,
           addPackratFiles
+        },
+        fetch: {
+          getCfgFile
         }
       },
       pinormos: {

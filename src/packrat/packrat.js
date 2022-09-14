@@ -5,7 +5,7 @@ export class BlobFile {
   }
 };
 
-export default async function downloadBlob(packratID, {startsWith = '', endsWith = '', contains = '', doesNotContain = ''} = {})
+export default async function downloadBlob(packratID, {startsWith = '', endsWith = '', contains = '', doesNotContain = ''} = {}, asString)
 {
   let fileBlob;
 
@@ -51,7 +51,7 @@ export default async function downloadBlob(packratID, {startsWith = '', endsWith
     }
     console.log(fileToDownload);
 
-    fileBlob = packratSession.downloadFileAsBlob(packratID, fileToDownload.filename);
+    fileBlob = packratSession.downloadFileAsBlob(packratID, fileToDownload.filename, asString);
   } catch (error) {
     return Promise.reject(error);
   }
@@ -134,7 +134,7 @@ PackratSession.prototype = {
         if (fileList && fileList.constructor && fileList.constructor.toString().indexOf("Array") > -1) {
             let returnList = new Array();
             for (let i = 0; i < fileList.length; i++) {
-                let fileBlob = this.downloadFileAsBlob(packratId, fileList[i]);
+                let fileBlob = this.downloadFileAsBlob(packratId, fileList[i], false);
                 returnList.push(fileBlob);
             }
             return returnList;
@@ -142,7 +142,7 @@ PackratSession.prototype = {
         return new Array();
     },
 
-    downloadFileAsBlob: function(packratId, filename) {
+    downloadFileAsBlob: function(packratId, filename, asString) {
         //eval("debugger;");
         if (this.authToken && this.thriftClient) {
             console.log("Requesting download...");
@@ -155,7 +155,7 @@ PackratSession.prototype = {
                     fileBlock = this.thriftClient.next_file_block(downloadRequest.requestId);
                     completeFile += fileBlock;
                 }
-                console.log(completeFile);
+                //console.log(completeFile);
                 if (null !== completeFile) {
                     console.log("file_hash = " + downloadRequest.file_hash);
                     console.log(completeFile.length);
@@ -173,8 +173,12 @@ PackratSession.prototype = {
                     // }
                 }
                 this.endDownload(downloadRequest.requestId);
-                let fileBlob = new Blob([this.convertStringToUtf8ByteArray(completeFile)], {type: "application/octet-stream"});
-                return new BlobFile(filename, fileBlob);
+                if (asString) {
+                  return completeFile;
+                } else {
+                  let fileBlob = new Blob([this.convertStringToUtf8ByteArray(completeFile)], {type: "application/octet-stream"});
+                  return new BlobFile(filename, fileBlob);
+                }
             }
         } else {
             throw "Client or AuthToken not set";

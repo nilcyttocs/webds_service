@@ -61,12 +61,16 @@ const _addPackratFile = async (
 
   let blob: BlobFile | undefined;
   try {
-    blob = await downloadBlob(packratID, {
-      startsWith,
-      endsWith,
-      contains,
-      doesNotContain
-    });
+    blob = await downloadBlob(
+      packratID,
+      {
+        startsWith,
+        endsWith,
+        contains,
+        doesNotContain
+      },
+      false
+    );
     if (!blob) {
       return Promise.reject("Downloaded empty blob");
     }
@@ -164,4 +168,44 @@ export const addPackratFiles = (
     }
   });
   return Promise.all(addedFiles);
+};
+
+const _getPackratFile = async (
+  packratID: number | undefined,
+  { startsWith = "", endsWith = "", contains = "", doesNotContain = "" } = {}
+): Promise<string> => {
+  if (!packratID) {
+    packratID = await getPackratID();
+    if (!packratID) {
+      return Promise.reject("Failed to get Packrat ID");
+    }
+  }
+
+  let blobAsString: string | undefined;
+  try {
+    blobAsString = await downloadBlob(
+      packratID,
+      {
+        startsWith,
+        endsWith,
+        contains,
+        doesNotContain
+      },
+      true
+    );
+    if (!blobAsString) {
+      return Promise.reject("Downloaded empty blob");
+    }
+    return Promise.resolve(blobAsString);
+  } catch (error) {
+    console.error(error);
+    return Promise.reject("Failed to download blob from Packrat server");
+  }
+};
+
+export const getCfgFile = (packratID?: number): Promise<string> => {
+  return _getPackratFile(packratID, {
+    doesNotContain: "full",
+    endsWith: "cfg"
+  });
 };

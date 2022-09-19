@@ -87,21 +87,31 @@ const checkRepo = async () => {
   if (data.length > 0) {
     try {
       data = JSON.parse(data);
-      const index = data.items.findIndex((item: any) => {
-        return item.path.includes("Internal/tarball");
-      });
-      const path = data.items[index].path;
-      const version = path.match(/pinormos-.+?(?=-)/g)![0].split("-")[1];
-      osInfo.repo.version = version;
-      osInfo.repo.tarballUrl = data.items[index].downloadUrl;
-      osInfo.repo.manifestUrl = data.items[index + 1].downloadUrl;
-      osInfo.repo.tarballName = data.items[index].path.match(/[^/]*$/)[0];
-      osInfo.repo.manifestName = data.items[index + 1].path.match(/[^/]*$/)[0];
     } catch {
       return Promise.reject(
         "Invalid data content in tarball repo response body"
       );
     }
+    let index: number;
+    if (osInfo.current.version.endsWith("E")) {
+      index = data.items.findIndex((item: any) => {
+        return item.path.includes("External/tarball");
+      });
+    } else {
+      index = data.items.findIndex((item: any) => {
+        return item.path.includes("Internal/tarball");
+      });
+    }
+    if (index === -1) {
+      return;
+    }
+    const path = data.items[index].path;
+    const version = path.match(/pinormos-.+?(?=-)/g)![0].split("-")[1];
+    osInfo.repo.version = version;
+    osInfo.repo.tarballUrl = data.items[index].downloadUrl;
+    osInfo.repo.manifestUrl = data.items[index + 1].downloadUrl;
+    osInfo.repo.tarballName = data.items[index].path.match(/[^/]*$/)[0];
+    osInfo.repo.manifestName = data.items[index + 1].path.match(/[^/]*$/)[0];
   } else {
     return Promise.reject("No data content in tarball repo response body");
   }

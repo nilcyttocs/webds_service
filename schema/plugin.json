@@ -9,7 +9,17 @@
         "rank": 80,
         "items": [
           {
-            "command": "webds_service_save_image:main_menu"
+            "type": "submenu",
+            "rank": 0,
+            "submenu": {
+              "id": "jp-mainmenu-webds-configuration-submenu",
+              "label": "Configuration",
+              "items": [
+                {
+                  "command": "webds_service_save_image:main_menu"
+                }
+              ]
+            }
           }
         ]
       }

@@ -16,7 +16,7 @@
               "label": "Configuration",
               "items": [
                 {
-                  "command": "webds_service_save_image:main_menu"
+                  "command": "webds_service_save_image:open"
                 }
               ]
             }

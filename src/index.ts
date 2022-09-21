@@ -192,7 +192,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
     console.log("JupyterLab extension @webds/service is activated!");
 
     const { commands } = app;
-    commands.addCommand("webds_service_save_image:main_menu", commandSaveImage);
+    commands.addCommand("webds_service_save_image:open", commandSaveImage);
 
     pollOSInfo();
 

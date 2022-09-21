@@ -5,13 +5,11 @@ import {
 
 import { MainAreaWidget, ReactWidget } from "@jupyterlab/apputils";
 
-import { IMainMenu } from "@jupyterlab/mainmenu";
-
 import { Token } from "@lumino/coreutils";
 
 import { FocusTracker } from "@lumino/widgets";
 
-import { addMenu } from "./main_menu/utils";
+import { commandSaveImage } from "./main_menu/utils";
 
 import {
   addApplicationHex,
@@ -189,12 +187,12 @@ export class WebDSWidget<
 const plugin: JupyterFrontEndPlugin<WebDSService> = {
   id: "@webds/service:plugin",
   autoStart: true,
-  requires: [IMainMenu],
   provides: WebDSService,
-  activate: (app: JupyterFrontEnd, mainMenu: IMainMenu): WebDSService => {
+  activate: (app: JupyterFrontEnd): WebDSService => {
     console.log("JupyterLab extension @webds/service is activated!");
 
-    addMenu(app, mainMenu);
+    const { commands } = app;
+    commands.addCommand("webds_service_save_image:main_menu", commandSaveImage);
 
     pollOSInfo();
 

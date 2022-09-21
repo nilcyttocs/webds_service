@@ -1,0 +1,30 @@
+{
+  "title": "WebDS",
+  "description": "WebDS settings.",
+  "jupyter.lab.menus": {
+    "main": [
+      {
+        "id": "jp-mainmenu-webds-menu",
+        "label": "WebDS",
+        "rank": 80,
+        "items": [
+          {
+            "type": "submenu",
+            "rank": 0,
+            "submenu": {
+              "id": "jp-mainmenu-webds-configuration-submenu",
+              "label": "Configuration",
+              "items": [
+                {
+                  "command": "webds_service_save_image:main_menu"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "additionalProperties": false,
+  "type": "object"
+}

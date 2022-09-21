@@ -1,10 +1,25 @@
+import { JupyterFrontEnd } from "@jupyterlab/application";
+
+import { MainAreaWidget } from "@jupyterlab/apputils";
+
+import { IMainMenu } from "@jupyterlab/mainmenu";
+
+import { Menu } from "@lumino/widgets";
+
 import { requestAPI } from "../handler";
 
 import { addApplicationImg } from "../packrat/utils";
 
+import { isExternal } from "../pinormos/utils";
+
 import { getPackratID } from "../touchcomm/utils";
 
 import { focusTracker } from "../index";
+
+namespace Attributes {
+  export const title = "WebDS";
+  export const rank = 80;
+}
 
 const saveImageWidgets = [
   "webds_config_editor_widget",
@@ -76,17 +91,118 @@ const saveApplicationImage = async () => {
   }
 };
 
-export const commandSaveImage = {
-  label: "Save Image",
-  caption: "Save Image",
-  isEnabled: () => {
-    if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
-      return saveImageWidgets.includes(focusTracker.currentWidget.id);
-    } else {
-      return false;
+export const addMenu = (app: JupyterFrontEnd, mainMenu: IMainMenu) => {
+  const webdsMenu = new Menu({ commands: app.commands });
+  webdsMenu.title.label = Attributes.title;
+
+  const commandSaveImage = {
+    label: "Save Image",
+    caption: "Save Image",
+    isEnabled: () => {
+      if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
+        return saveImageWidgets.includes(focusTracker.currentWidget.id);
+      } else {
+        return false;
+      }
+    },
+    execute: (args: any) => {
+      saveApplicationImage();
     }
-  },
-  execute: (args: any) => {
-    saveApplicationImage();
+  };
+  app.commands.addCommand("webds_service_save_image:open", commandSaveImage);
+
+  const configSubMenu = new Menu({ commands: app.commands });
+  configSubMenu.title.label = "Configuration";
+  configSubMenu.addItem({
+    command: "webds_service_save_image:open"
+  });
+
+  webdsMenu.addItem({
+    type: "submenu",
+    submenu: configSubMenu
+  });
+
+  if (!isExternal()) {
+    const commandSyslog = {
+      label: "Syslog",
+      caption: "Syslog",
+      execute: async () => {
+        app.commands
+          .execute("docmanager:open", {
+            path: "Synaptics/_links/Syslog",
+            factory: "Editor",
+            options: { mode: "split-right" }
+          })
+          .then((widget: MainAreaWidget) => {
+            widget.id = "webds_service_syslog";
+            widget.title.closable = true;
+            if (!widget.isAttached) app.shell.add(widget, "main");
+            app.shell.activateById(widget.id);
+          });
+      }
+    };
+    app.commands.addCommand("webds_service_syslog:open", commandSyslog);
+
+    const commandI2CLog = {
+      label: "I2C Log",
+      caption: "I2C Log",
+      execute: async () => {
+        app.commands
+          .execute("docmanager:open", {
+            path: "Synaptics/_links/I2C_Log",
+            factory: "Editor",
+            options: { mode: "split-right" }
+          })
+          .then((widget: MainAreaWidget) => {
+            widget.id = "webds_service_i2c_log";
+            widget.title.closable = true;
+            if (!widget.isAttached) app.shell.add(widget, "main");
+            app.shell.activateById(widget.id);
+          });
+      }
+    };
+    app.commands.addCommand("webds_service_i2c_log:open", commandI2CLog);
+
+    const commandSPILog = {
+      label: "SPI Log",
+      caption: "SPI Log",
+      execute: async () => {
+        app.commands
+          .execute("docmanager:open", {
+            path: "Synaptics/_links/SPI_Log",
+            factory: "Editor",
+            options: { mode: "split-right" }
+          })
+          .then((widget: MainAreaWidget) => {
+            widget.id = "webds_service_spi_log";
+            widget.title.closable = true;
+            if (!widget.isAttached) app.shell.add(widget, "main");
+            app.shell.activateById(widget.id);
+          });
+      }
+    };
+    app.commands.addCommand("webds_service_spi_log:open", commandSPILog);
+
+    const logsSubMenu = new Menu({ commands: app.commands });
+    logsSubMenu.title.label = "Logs";
+    logsSubMenu.addItem({
+      command: "webds_service_syslog:open"
+    });
+    logsSubMenu.addItem({
+      command: "webds_service_i2c_log:open"
+    });
+    logsSubMenu.addItem({
+      command: "webds_service_spi_log:open"
+    });
+
+    webdsMenu.addItem({
+      type: "separator"
+    });
+    webdsMenu.addItem({
+      type: "submenu",
+      submenu: logsSubMenu
+    });
   }
+
+  mainMenu.addMenu(webdsMenu, { rank: Attributes.rank });
 };

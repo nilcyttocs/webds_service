@@ -2,9 +2,9 @@ import { requestAPI } from "../handler";
 
 import { focusTracker, OSInfo } from "../index";
 
-const DROPBOX_DIR = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
-
 const dropboxLocation = "/var/spool/syna/softwareupdater";
+
+const dropboxcEndpoint = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
 
 const repoListURL =
   "http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&sort=name&direction=desc";
@@ -50,7 +50,7 @@ const _findEntry = (root: any, path: string[], entry: string): boolean => {
 
 const checkDropbox = async () => {
   try {
-    const dropboxDir = await requestAPI<any>("filesystem?dir=" + DROPBOX_DIR);
+    const dropboxDir = await requestAPI<any>("filesystem?dir=" + dropboxcEndpoint);
     console.log(dropboxDir);
     if (
       _findEntry(dropboxDir, [], osInfo.repo.tarballName) &&
@@ -59,7 +59,7 @@ const checkDropbox = async () => {
       osInfo.repo.downloaded = true;
     }
   } catch (error) {
-    console.error(`Error - GET /webds/filesystem?dir=${DROPBOX_DIR}\n${error}`);
+    console.error(`Error - GET /webds/filesystem?dir=${dropboxcEndpoint}\n${error}`);
     return Promise.reject("Failed to check for presence of tarball in dropbox");
   }
 };

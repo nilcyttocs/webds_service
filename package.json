@@ -50,6 +50,7 @@
     "@emotion/styled": "11.6.0",
     "@jupyterlab/application": "3.4.5",
     "@jupyterlab/apputils": "3.4.5",
+    "@jupyterlab/mainmenu": "3.4.5",
     "@mui/icons-material": "5.5.1",
     "@mui/material": "5.5.3",
     "node-int64": "0.4.0"

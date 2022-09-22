@@ -5,11 +5,13 @@ import {
 
 import { MainAreaWidget, ReactWidget } from "@jupyterlab/apputils";
 
+import { IMainMenu } from "@jupyterlab/mainmenu";
+
 import { Token } from "@lumino/coreutils";
 
 import { FocusTracker } from "@lumino/widgets";
 
-import { commandSaveImage } from "./main_menu/utils";
+import { addMenu } from "./main_menu/utils";
 
 import {
   addApplicationHex,
@@ -21,7 +23,12 @@ import {
   getCfgFile
 } from "./packrat/utils";
 
-import { getOSInfo, isExternal, pollOSInfo } from "./pinormos/utils";
+import {
+  getOSInfo,
+  isExternal,
+  pollRepo,
+  updateOSInfo
+} from "./pinormos/utils";
 
 import { getPackratID, getPartNumber } from "./touchcomm/utils";
 
@@ -53,6 +60,7 @@ export interface OSInfo {
 
 export type WebDSService = {
   greeting: () => void;
+  initialized: Promise<null>;
   packrat: {
     cache: {
       addApplicationHex: (packratID?: number | undefined) => Promise<string>;
@@ -187,19 +195,29 @@ export class WebDSWidget<
 const plugin: JupyterFrontEndPlugin<WebDSService> = {
   id: "@webds/service:plugin",
   autoStart: true,
+  requires: [IMainMenu],
   provides: WebDSService,
-  activate: (app: JupyterFrontEnd): WebDSService => {
+  activate: (app: JupyterFrontEnd, mainMenu: IMainMenu): WebDSService => {
     console.log("JupyterLab extension @webds/service is activated!");
 
-    const { commands } = app;
-    commands.addCommand("webds_service_save_image:open", commandSaveImage);
-
-    pollOSInfo();
+    const initializedPromise = new Promise<null>(function (resolve, reject) {
+      updateOSInfo()
+        .then(() => {
+          addMenu(app, mainMenu);
+          pollRepo();
+          resolve(null);
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(error);
+        });
+    });
 
     return {
       greeting() {
         console.log("Hello! This is WebDS Service. How may I help you?");
       },
+      initialized: initializedPromise,
       packrat: {
         cache: {
           addApplicationHex,

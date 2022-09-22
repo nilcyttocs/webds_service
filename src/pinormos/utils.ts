@@ -9,7 +9,7 @@ const dropboxcEndpoint = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
 const repoListURL =
   "http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&sort=name&direction=desc";
 
-const pollOSInfoPeriod = 2 * 60 * 1000;
+const pollRepoPeriod = 2 * 60 * 1000;
 
 const streamingWidgets = ["webds_heatmap_widget", "webds_touch_widget"];
 
@@ -50,7 +50,9 @@ const _findEntry = (root: any, path: string[], entry: string): boolean => {
 
 const checkDropbox = async () => {
   try {
-    const dropboxDir = await requestAPI<any>("filesystem?dir=" + dropboxcEndpoint);
+    const dropboxDir = await requestAPI<any>(
+      "filesystem?dir=" + dropboxcEndpoint
+    );
     console.log(dropboxDir);
     if (
       _findEntry(dropboxDir, [], osInfo.repo.tarballName) &&
@@ -59,7 +61,9 @@ const checkDropbox = async () => {
       osInfo.repo.downloaded = true;
     }
   } catch (error) {
-    console.error(`Error - GET /webds/filesystem?dir=${dropboxcEndpoint}\n${error}`);
+    console.error(
+      `Error - GET /webds/filesystem?dir=${dropboxcEndpoint}\n${error}`
+    );
     return Promise.reject("Failed to check for presence of tarball in dropbox");
   }
 };
@@ -172,19 +176,12 @@ const downloadTarball = async () => {
   }
 };
 
-export const pollOSInfo = async () => {
+export const pollRepo = async () => {
   if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
     if (streamingWidgets.includes(focusTracker.currentWidget.id)) {
-      setTimeout(pollOSInfo, pollOSInfoPeriod);
+      setTimeout(pollRepo, pollRepoPeriod);
       return;
     }
-  }
-
-  try {
-    const data = await requestAPI<any>("about?query=os-info");
-    osInfo.current.version = data["VERSION_ID"].replace(/\"/g, "");
-  } catch (error) {
-    console.error(`Error - GET /webds/about?query=os-info\n${error}`);
   }
 
   try {
@@ -211,7 +208,17 @@ export const pollOSInfo = async () => {
     }
   }
 
-  setTimeout(pollOSInfo, pollOSInfoPeriod);
+  setTimeout(pollRepo, pollRepoPeriod);
+};
+
+export const updateOSInfo = async () => {
+  try {
+    const data = await requestAPI<any>("about?query=os-info");
+    osInfo.current.version = data["VERSION_ID"].replace(/\"/g, "");
+  } catch (error) {
+    console.error(`Error - GET /webds/about?query=os-info\n${error}`);
+    Promise.reject(error);
+  }
 };
 
 export const getOSInfo = (): OSInfo => {

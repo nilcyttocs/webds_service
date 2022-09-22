@@ -190,7 +190,9 @@ export const pollRepo = async () => {
     console.error(error);
   }
 
-  if (osInfo.repo.version > osInfo.current.version) {
+  if (
+    osInfo.repo.version.toLowerCase() > osInfo.current.version.toLowerCase()
+  ) {
     try {
       await checkDropbox();
       if (osInfo.repo.downloaded === true) {

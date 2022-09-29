@@ -2,10 +2,10 @@ import React, { useState } from "react";
 
 import { Stack, Divider } from "@mui/material";
 
-import VerticalStepper from "./steps";
+import { VerticalStepper } from "./steps";
 import WidgetSensor from "./widgetSensor";
 
-export default function WidgetContent(props: any) {
+export const WidgetContent = (props: any): JSX.Element => {
   const [axis, setAxis] = useState(false);
   const [xdir, setXdir] = useState<number[]>([1, 2, 3, 4, 5, 6]);
   const [ydir, setYdir] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);

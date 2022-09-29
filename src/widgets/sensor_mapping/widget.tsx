@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 
 import { ThemeProvider } from "@mui/material/styles";
-import WidgetContent from "./widgetContent";
+import { WidgetContent } from "./widgetContent";
 import WidgetControl from "./widgetControl";
 
 const WIDGET_WIDTH = 900;

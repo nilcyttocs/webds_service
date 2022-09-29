@@ -21,7 +21,7 @@ import {
   styled
 } from "@mui/material";
 
-import BankingScheme from "./bankingScheme";
+import { BankingScheme } from "./bankingScheme";
 import { extensionConst } from "./constant";
 
 import { requestAPI } from "../../handler";
@@ -97,7 +97,7 @@ const BankingInput = styled(InputBase)(({ theme }) => ({
   }
 }));
 
-export default function VerticalStepper(props: ISteppr) {
+export const VerticalStepper = (props: ISteppr): JSX.Element => {
   const [activeStep, setActiveStep] = React.useState(props.step);
   const [stepStatus, setStepStatus] = useState(
     Array(extensionConst.steps).fill(0)
@@ -569,44 +569,49 @@ export default function VerticalStepper(props: ISteppr) {
     applyParam.current.txAxis = xTrxRef.current;
   }
 
-  const initSensorMapping = async () => {
-	props.service.packrat.cache.addPrivateConfig()
-		.then((ret) => {
-			console.log(ret);
-			setOpenAlert({ state: true, severity: 'success', message: ret.toString() });
-		})
-		.then(() => Get())
-		.then((ret) => {
-			let config = JSON.parse(ret);
-			var txlen = config["txCount"];
-			var rxlen = config["rxCount"];
-			var tx = config["imageTxes"];
-			var rx = config["imageRxes"];
+    const initSensorMapping = async () => {
+        try {
+            let ret;
+            const external = props.service.pinormos.isExternal();
+            if (external) {
+                ret = await props.service.packrat.cache.addPublicConfig();
+            } else {
+                ret = await props.service.packrat.cache.addPrivateConfig();
+            }
+            setOpenAlert({ state: true, severity: 'success', message: ret.toString() });
 
-			findMatchBankingScheme(tx, rx);
+            ret = await Get();
 
-			updatexTrxRef(config["txAxis"] ? "RX" : "TX" );
+            let config = JSON.parse(ret);
+            var txlen = config["txCount"];
+            var rxlen = config["rxCount"];
+            var tx = config["imageTxes"];
+            var rx = config["imageRxes"];
 
-			updateTxCount(txlen.toString());
-			updateRxCount(rxlen.toString());
+            findMatchBankingScheme(tx, rx);
 
-			txData.current.dim = tx.length;
-			rxData.current.dim = rx.length;
+            updatexTrxRef(config["txAxis"] ? "RX" : "TX");
 
-			updateTxMapping(tx.slice(0, txlen).toString());
-			updateRxMapping(rx.slice(0, rxlen).toString());
+            updateTxCount(txlen.toString());
+            updateRxCount(rxlen.toString());
 
-			setDataReady(true);
-		})
-		.catch(err => {
-			console.log(err);
-			setOpenAlert({ state: true, severity: 'error', message: err.toString() });
-			return;
-		})
-		.finally(() => {
-		   updateLatestStatus();
-		   setInitState(true);
-		})
+            txData.current.dim = tx.length;
+            rxData.current.dim = rx.length;
+
+            updateTxMapping(tx.slice(0, txlen).toString());
+            updateRxMapping(rx.slice(0, rxlen).toString());
+
+            setDataReady(true);
+
+            updateLatestStatus();
+            setInitState(true);
+
+        } catch (error) {
+            console.error(error);
+            setOpenAlert({ state: true, severity: 'error', message: error.toString() });
+            updateLatestStatus();
+            setInitState(true);
+        }
   };
 
   const initialize = async () => {
@@ -615,18 +620,16 @@ export default function VerticalStepper(props: ISteppr) {
         console.log(partNumber);
         for (const [key, value] of Object.entries(extensionConst.partNumber)) {
           console.log(key, value);
-          const match = value.find((element) => {
-            if (partNumber.includes(element)) {
+          value.find((element) => {
+             if (partNumber.toLowerCase().includes(element)) {
               asic.current = key;
               return true;
             }
           });
-          console.log(match);
         }
 
         if (asic.current === "") {
-          console.log("asic not found");
-          return;
+            throw `unsupported partnumber ${partNumber}`;
         }
 
         var banking_field = Object.keys(
@@ -682,7 +685,7 @@ export default function VerticalStepper(props: ISteppr) {
         handleBankingSchemeInit(row, trx_select);
       })
       .catch((err) => {
-        console.log(err);
+          alert(err);
       });
   };
 
@@ -735,7 +738,7 @@ export default function VerticalStepper(props: ISteppr) {
   }
 
   function getBankingInputContent() {
-    let str = "Banking Range\n";
+    let str = "Valid Banking Range\n";
     if (txData.current.bk.length) {
       str = str + "[TX]" + txData.current.bk.toString() + "\n";
     }
@@ -945,11 +948,11 @@ export default function VerticalStepper(props: ISteppr) {
         >
           <Stack direction="row" justifyContent="center" alignItems="center">
             <FormControlLabel value={"TX"} control={<Radio />} label="" />
-            <Typography>Tx on X-axis</Typography>
+            <Typography color="textPrimary">Tx on X-axis</Typography>
           </Stack>
           <Stack direction="row" justifyContent="center" alignItems="center">
             <FormControlLabel value={"RX"} control={<Radio />} label="" />
-            <Typography>Rx on X-axis</Typography>
+            <Typography color="textPrimary">Rx on X-axis</Typography>
           </Stack>
         </RadioGroup>
       </FormControl>
@@ -1099,7 +1102,7 @@ export default function VerticalStepper(props: ISteppr) {
               sx={{ pl: 0, width: 480 }}
             >
               {displayStepIcon(index)}
-              <Typography>{step.label}</Typography>
+              <Typography color="textPrimary">{step.label}</Typography>
             </Button>
             <StepContent>
               <Box sx={{ m: 1 }}>

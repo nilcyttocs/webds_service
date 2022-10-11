@@ -14,7 +14,7 @@ import { isExternal } from "../pinormos/utils";
 
 import { getPackratID } from "../touchcomm/utils";
 
-import { focusTracker } from "../index";
+import { focusTracker } from "../widgets/utils";
 
 namespace Attributes {
   export const title = "WebDS";
@@ -127,18 +127,23 @@ export const addMenu = (app: JupyterFrontEnd, mainMenu: IMainMenu) => {
       label: "Syslog",
       caption: "Syslog",
       execute: async () => {
-        app.commands
-          .execute("docmanager:open", {
-            path: "Synaptics/_links/Syslog",
-            factory: "Editor",
-            options: { mode: "split-right" }
-          })
-          .then((widget: MainAreaWidget) => {
-            widget.id = "webds_service_syslog";
-            widget.title.closable = true;
-            if (!widget.isAttached) app.shell.add(widget, "main");
-            app.shell.activateById(widget.id);
-          });
+        try {
+          const widget: MainAreaWidget = await app.commands.execute(
+            "docmanager:open",
+            {
+              path: "Synaptics/_links/Syslog",
+              factory: "Editor",
+              options: { mode: "split-right" }
+            }
+          );
+          widget.id = "webds_service_syslog";
+          widget.title.closable = true;
+          if (!widget.isAttached) app.shell.add(widget, "main");
+          app.shell.activateById(widget.id);
+        } catch (error) {
+          console.error(error);
+          window.alert("Failed to open syslog.");
+        }
       }
     };
     app.commands.addCommand("webds_service_syslog:open", commandSyslog);
@@ -147,18 +152,23 @@ export const addMenu = (app: JupyterFrontEnd, mainMenu: IMainMenu) => {
       label: "I2C Log",
       caption: "I2C Log",
       execute: async () => {
-        app.commands
-          .execute("docmanager:open", {
-            path: "Synaptics/_links/I2C_Log",
-            factory: "Editor",
-            options: { mode: "split-right" }
-          })
-          .then((widget: MainAreaWidget) => {
-            widget.id = "webds_service_i2c_log";
-            widget.title.closable = true;
-            if (!widget.isAttached) app.shell.add(widget, "main");
-            app.shell.activateById(widget.id);
-          });
+        try {
+          const widget: MainAreaWidget = await app.commands.execute(
+            "docmanager:open",
+            {
+              path: "Synaptics/_links/I2C_Log",
+              factory: "Editor",
+              options: { mode: "split-right" }
+            }
+          );
+          widget.id = "webds_service_i2c_log";
+          widget.title.closable = true;
+          if (!widget.isAttached) app.shell.add(widget, "main");
+          app.shell.activateById(widget.id);
+        } catch (error) {
+          console.error(error);
+          window.alert("Failed to open I2C log.");
+        }
       }
     };
     app.commands.addCommand("webds_service_i2c_log:open", commandI2CLog);
@@ -167,18 +177,23 @@ export const addMenu = (app: JupyterFrontEnd, mainMenu: IMainMenu) => {
       label: "SPI Log",
       caption: "SPI Log",
       execute: async () => {
-        app.commands
-          .execute("docmanager:open", {
-            path: "Synaptics/_links/SPI_Log",
-            factory: "Editor",
-            options: { mode: "split-right" }
-          })
-          .then((widget: MainAreaWidget) => {
-            widget.id = "webds_service_spi_log";
-            widget.title.closable = true;
-            if (!widget.isAttached) app.shell.add(widget, "main");
-            app.shell.activateById(widget.id);
-          });
+        try {
+          const widget: MainAreaWidget = await app.commands.execute(
+            "docmanager:open",
+            {
+              path: "Synaptics/_links/SPI_Log",
+              factory: "Editor",
+              options: { mode: "split-right" }
+            }
+          );
+          widget.id = "webds_service_spi_log";
+          widget.title.closable = true;
+          if (!widget.isAttached) app.shell.add(widget, "main");
+          app.shell.activateById(widget.id);
+        } catch (error) {
+          console.error(error);
+          window.alert("Failed to open SPI log.");
+        }
       }
     };
     app.commands.addCommand("webds_service_spi_log:open", commandSPILog);

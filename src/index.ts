@@ -3,13 +3,13 @@ import {
   JupyterFrontEndPlugin
 } from "@jupyterlab/application";
 
-import { MainAreaWidget, ReactWidget } from "@jupyterlab/apputils";
-
 import { IMainMenu } from "@jupyterlab/mainmenu";
+
+import { IStateDB } from "@jupyterlab/statedb";
 
 import { Token } from "@lumino/coreutils";
 
-import { FocusTracker } from "@lumino/widgets";
+import { addStaticConfigUsage, initializeStatistics } from "./analytics/utils";
 
 import { addMenu } from "./main_menu/utils";
 
@@ -26,6 +26,7 @@ import {
 import {
   getOSInfo,
   isExternal,
+  OSInfo,
   pollRepo,
   updateOSInfo
 } from "./pinormos/utils";
@@ -41,24 +42,20 @@ import {
   setWebDSLauncherModel
 } from "./ui/utils";
 
+export { OSInfo } from "./pinormos/utils";
+
 export { ReflashWidget } from "./widgets/reflash/widget";
+
 export { SensorMappingWidget } from "./widgets/sensor_mapping/widget";
 
-export interface OSInfo {
-  current: {
-    version: string;
-  };
-  repo: {
-    version: string;
-    tarballUrl: string;
-    tarballName: string;
-    manifestUrl: string;
-    manifestName: string;
-    downloaded: boolean;
-  };
-}
+export { WebDSWidget } from "./widgets/utils";
+
+export let stateDB: IStateDB | null = null;
 
 export type WebDSService = {
+  analytics: {
+    addStaticConfigUsage: (configName: string, target: string) => void;
+  };
   greeting: () => void;
   initialized: Promise<null>;
   packrat: {
@@ -99,121 +96,46 @@ export const WebDSService = new Token<WebDSService>(
   "@webds/service:WebDSService"
 );
 
-export const focusTracker: FocusTracker<WebDSWidget> = new FocusTracker();
-
-export class WebDSWidget<
-  T extends ReactWidget = ReactWidget
-> extends MainAreaWidget {
-  private widgetContainer: any;
-  private widgetContent: any;
-  private widgetBody: any;
-  private isScrolling = false;
-  private oIframe = document.createElement("iframe");
-  private iIframe = document.createElement("iframe");
-
-  constructor(options: MainAreaWidget.IOptions<T>) {
-    super(options);
-    focusTracker.add(this);
-    this.oIframe.style.cssText =
-      "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
-    this.iIframe.style.cssText =
-      "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
-  }
-
-  private _setShadows(event: any) {
-    if (!this.isScrolling) {
-      window.requestAnimationFrame(() => {
-        if (event.target.scrollTop > 0) {
-          this.widgetContainer.classList.add("off-top");
-        } else {
-          this.widgetContainer.classList.remove("off-top");
-        }
-        if (
-          Math.abs(
-            event.target.scrollHeight -
-              event.target.clientHeight -
-              event.target.scrollTop
-          ) > 3
-        ) {
-          this.widgetContainer.classList.add("off-bottom");
-        } else {
-          this.widgetContainer.classList.remove("off-bottom");
-        }
-        this.isScrolling = false;
-      });
-      this.isScrolling = true;
-    }
-  }
-
-  private _addIframeResizeDetection() {
-    this.oIframe.onload = () => {
-      this.oIframe.contentWindow?.addEventListener("resize", () => {
-        try {
-          var evt = new UIEvent("resize");
-          this.oIframe.parentElement?.dispatchEvent(evt);
-        } catch (e) {}
-      });
-    };
-    this.iIframe.onload = () => {
-      this.iIframe.contentWindow?.addEventListener("resize", () => {
-        try {
-          var evt = new UIEvent("resize");
-          this.iIframe.parentElement?.parentElement?.dispatchEvent(evt);
-        } catch (e) {}
-      });
-    };
-    this.widgetContent.appendChild(this.oIframe);
-    this.widgetBody.appendChild(this.iIframe);
-  }
-
-  setShadows() {
-    this.widgetContainer = document.getElementById(this.id + "_container");
-    this.widgetContent = document.getElementById(this.id + "_content");
-    this.widgetBody = this.widgetContent.querySelector(".jp-webds-widget-body");
-    if (this.widgetContainer && this.widgetContent && this.widgetBody) {
-      this._addIframeResizeDetection();
-      this.widgetContent.addEventListener(
-        "scroll",
-        this._setShadows.bind(this)
-      );
-      this.widgetContent.addEventListener(
-        "resize",
-        this._setShadows.bind(this)
-      );
-      setTimeout(() => {
-        if (this.widgetContent.scrollHeight > this.widgetContent.clientHeight) {
-          this.widgetContainer.classList.add("off-bottom");
-        }
-      }, 500);
-    }
-  }
-}
-
 /**
  * Initialization data for the @webds/service extension.
  */
 const plugin: JupyterFrontEndPlugin<WebDSService> = {
   id: "@webds/service:plugin",
   autoStart: true,
+  optional: [IStateDB],
   requires: [IMainMenu],
   provides: WebDSService,
-  activate: (app: JupyterFrontEnd, mainMenu: IMainMenu): WebDSService => {
+  activate: (
+    app: JupyterFrontEnd,
+    mainMenu: IMainMenu,
+    state: IStateDB | null
+  ): WebDSService => {
     console.log("JupyterLab extension @webds/service is activated!");
 
-    const initializedPromise = new Promise<null>(function (resolve, reject) {
-      updateOSInfo()
-        .then(() => {
-          addMenu(app, mainMenu);
-          pollRepo();
-          resolve(null);
-        })
-        .catch((error) => {
-          console.error(error);
-          reject(error);
-        });
+    const osInfoPromise = new Promise<null>(function (resolve, reject) {
+      updateOSInfo().then(() => {
+        resolve(null);
+      });
     });
 
+    osInfoPromise.then(() => {
+      pollRepo();
+      addMenu(app, mainMenu);
+    });
+
+    if (state) {
+      osInfoPromise.then(() => {
+        stateDB = state;
+        initializeStatistics();
+      });
+    }
+
+    const initializedPromise = osInfoPromise;
+
     return {
+      analytics: {
+        addStaticConfigUsage
+      },
       greeting() {
         console.log("Hello! This is WebDS Service. How may I help you?");
       },

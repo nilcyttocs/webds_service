@@ -1,6 +1,20 @@
 import { requestAPI } from "../handler";
 
-import { focusTracker, OSInfo } from "../index";
+import { focusTracker } from "../widgets/utils";
+
+export interface OSInfo {
+  current: {
+    version: string;
+  };
+  repo: {
+    version: string;
+    tarballUrl: string;
+    tarballName: string;
+    manifestUrl: string;
+    manifestName: string;
+    downloaded: boolean;
+  };
+}
 
 const dropboxLocation = "/var/spool/syna/softwareupdater";
 

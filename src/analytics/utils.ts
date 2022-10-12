@@ -27,7 +27,7 @@ export const addStaticConfigUsage = async (
       statistics.data[statistics.version].staticConfig[target][configName] +
         1 || 1;
     try {
-      await stateDB.save(statistics.dbName, statistics.data as any);
+      //await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -39,7 +39,7 @@ export const addExtensionUsage = async (extensionName: string) => {
     statistics.data[statistics.version].extensions[extensionName] =
       statistics.data[statistics.version].extensions[extensionName] + 1 || 1;
     try {
-      await stateDB.save(statistics.dbName, statistics.data as any);
+      //await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -56,7 +56,7 @@ export const clearStatistics = async () => {
       }
     };
     try {
-      await stateDB.save(statistics.dbName, statistics.data as any);
+      //await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -83,7 +83,7 @@ export const initializeStatistics = async () => {
     statistics.data[statistics.version].staticConfig.toRAM =
       statistics.data[statistics.version].staticConfig.toRAM || {};
     try {
-      await stateDB.save(statistics.dbName, statistics.data as any);
+      //await stateDB.save(statistics.dbName, statistics.data as any);
       statistics.initialized = true;
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);

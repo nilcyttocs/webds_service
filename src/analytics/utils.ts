@@ -18,6 +18,30 @@ export const statistics: Statistics = {
   initialized: false
 };
 
+export const addExtensionUsage = async (extensionName: string) => {
+  if (stateDB && statistics.initialized) {
+    statistics.data[statistics.version].extensions[extensionName] =
+      statistics.data[statistics.version].extensions[extensionName] + 1 || 1;
+    try {
+      //await stateDB.save(statistics.dbName, statistics.data as any);
+    } catch (error) {
+      console.error(`Failed to save to ${statistics.dbName}\n${error}`);
+    }
+  }
+};
+
+export const addGuidedTuningUsage = async (widgetName: string) => {
+  if (stateDB && statistics.initialized) {
+    statistics.data[statistics.version].guidedTuning[widgetName] =
+      statistics.data[statistics.version].guidedTuning[widgetName] + 1 || 1;
+    try {
+      //await stateDB.save(statistics.dbName, statistics.data as any);
+    } catch (error) {
+      console.error(`Failed to save to ${statistics.dbName}\n${error}`);
+    }
+  }
+};
+
 export const addStaticConfigUsage = async (
   configName: string,
   target: string
@@ -34,22 +58,11 @@ export const addStaticConfigUsage = async (
   }
 };
 
-export const addExtensionUsage = async (extensionName: string) => {
-  if (stateDB && statistics.initialized) {
-    statistics.data[statistics.version].extensions[extensionName] =
-      statistics.data[statistics.version].extensions[extensionName] + 1 || 1;
-    try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
-    } catch (error) {
-      console.error(`Failed to save to ${statistics.dbName}\n${error}`);
-    }
-  }
-};
-
 export const clearStatistics = async () => {
   if (stateDB && statistics.initialized) {
     statistics.data[statistics.version] = {
       extensions: {},
+      guidedTuning: {},
       staticConfig: {
         toFlash: {},
         toRAM: {}
@@ -76,6 +89,8 @@ export const initializeStatistics = async () => {
       statistics.data[statistics.version] || {};
     statistics.data[statistics.version].extensions =
       statistics.data[statistics.version].extensions || {};
+    statistics.data[statistics.version].guidedTuning =
+      statistics.data[statistics.version].guidedTuning || {};
     statistics.data[statistics.version].staticConfig =
       statistics.data[statistics.version].staticConfig || {};
     statistics.data[statistics.version].staticConfig.toFlash =

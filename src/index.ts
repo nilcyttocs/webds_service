@@ -9,7 +9,11 @@ import { IStateDB } from "@jupyterlab/statedb";
 
 import { Token } from "@lumino/coreutils";
 
-import { addStaticConfigUsage, initializeStatistics } from "./analytics/utils";
+import {
+  addGuidedTuningUsage,
+  addStaticConfigUsage,
+  initializeStatistics
+} from "./analytics/utils";
 
 import { addMenu } from "./main_menu/utils";
 
@@ -54,6 +58,7 @@ export let stateDB: IStateDB | null = null;
 
 export type WebDSService = {
   analytics: {
+    addGuidedTuningUsage: (widgetName: string) => void;
     addStaticConfigUsage: (configName: string, target: string) => void;
   };
   greeting: () => void;
@@ -134,6 +139,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
 
     return {
       analytics: {
+        addGuidedTuningUsage,
         addStaticConfigUsage
       },
       greeting() {

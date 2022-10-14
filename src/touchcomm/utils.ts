@@ -1,5 +1,11 @@
 import { requestAPI } from "../handler";
 
+export type TouchcommReport = {
+  image: number[][];
+  hybridx: number[];
+  hybridy: number[];
+};
+
 const getIdentify = async (): Promise<any> => {
   const dataToSend: any = {
     command: "identify"

@@ -48,6 +48,8 @@ import {
 
 export { OSInfo } from "./pinormos/utils";
 
+export { TouchcommReport } from "./touchcomm/utils";
+
 export { ReflashWidget } from "./widgets/reflash/widget";
 
 export { SensorMappingWidget } from "./widgets/sensor_mapping/widget";

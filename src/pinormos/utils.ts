@@ -16,6 +16,28 @@ export interface OSInfo {
   };
 }
 
+type ProcessorType = {
+  "model name": string;
+  BogoMIPS: string;
+  Features: string;
+  "CPU implementer": string;
+  "CPU architecture": string;
+  "CPU variant": string;
+  "CPU part": string;
+  "CPU revision": string;
+};
+
+export interface CPUInfo {
+  "processor 0": ProcessorType;
+  "processor 1": ProcessorType;
+  "processor 2": ProcessorType;
+  "processor 3": ProcessorType;
+  Hardware: string;
+  Revision: string;
+  Serial: string;
+  Model: string;
+}
+
 const dropboxLocation = "/var/spool/syna/softwareupdater";
 
 const dropboxcEndpoint = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
@@ -40,6 +62,8 @@ const osInfo: OSInfo = {
     downloaded: false
   }
 };
+
+let cpuInfo: CPUInfo;
 
 const _findObject = (array: any[], keyValue: any): any => {
   const result = array.filter(function (object) {
@@ -227,7 +251,7 @@ export const pollRepo = async () => {
   setTimeout(pollRepo, pollRepoPeriod);
 };
 
-export const updateOSInfo = async () => {
+export const updateDSDKInfo = async () => {
   try {
     const data = await requestAPI<any>("about?query=os-info");
     osInfo.current.version = data["VERSION_ID"].replace(/\"/g, "");
@@ -235,10 +259,20 @@ export const updateOSInfo = async () => {
     console.error(`Error - GET /webds/about?query=os-info\n${error}`);
     Promise.reject(error);
   }
+  try {
+    cpuInfo = await requestAPI<any>("about?query=cpu-info");
+  } catch (error) {
+    console.error(`Error - GET /webds/about?query=cpu-info\n${error}`);
+    Promise.reject(error);
+  }
 };
 
 export const getOSInfo = (): OSInfo => {
   return osInfo;
+};
+
+export const getCPUInfo = (): CPUInfo => {
+  return cpuInfo;
 };
 
 export const isExternal = (): boolean => {

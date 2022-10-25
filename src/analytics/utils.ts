@@ -1,6 +1,6 @@
 import { stateDB } from "../index";
 
-import { getOSInfo } from "../pinormos/utils";
+import { getCPUInfo, getOSInfo } from "../pinormos/utils";
 
 const STATISTICS_DB_NAME = "@webds/service:statistics";
 
@@ -84,7 +84,7 @@ export const initializeStatistics = async () => {
     }
     statistics.data = data;
     statistics.version = getOSInfo().current.version;
-    statistics.data.serial = "";
+    statistics.data.serial = getCPUInfo().Serial;
     statistics.data[statistics.version] =
       statistics.data[statistics.version] || {};
     statistics.data[statistics.version].extensions =

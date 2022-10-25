@@ -28,11 +28,13 @@ import {
 } from "./packrat/utils";
 
 import {
+  CPUInfo,
+  getCPUInfo,
   getOSInfo,
   isExternal,
   OSInfo,
   pollRepo,
-  updateOSInfo
+  updateDSDKInfo
 } from "./pinormos/utils";
 
 import { getPackratID, getPartNumber } from "./touchcomm/utils";
@@ -46,7 +48,7 @@ import {
   setWebDSLauncherModel
 } from "./ui/utils";
 
-export { OSInfo } from "./pinormos/utils";
+export { CPUInfo, OSInfo } from "./pinormos/utils";
 
 export { TouchcommReport } from "./touchcomm/utils";
 
@@ -82,6 +84,7 @@ export type WebDSService = {
     };
   };
   pinormos: {
+    getCPUInfo: () => CPUInfo;
     getOSInfo: () => OSInfo;
     isExternal: () => boolean;
   };
@@ -119,25 +122,25 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
   ): WebDSService => {
     console.log("JupyterLab extension @webds/service is activated!");
 
-    const osInfoPromise = new Promise<null>(function (resolve, reject) {
-      updateOSInfo().then(() => {
+    const dsdkInfoPromise = new Promise<null>(function (resolve, reject) {
+      updateDSDKInfo().then(() => {
         resolve(null);
       });
     });
 
-    osInfoPromise.then(() => {
+    dsdkInfoPromise.then(() => {
       pollRepo();
       addMenu(app, mainMenu);
     });
 
     if (state) {
-      osInfoPromise.then(() => {
+      dsdkInfoPromise.then(() => {
         stateDB = state;
         initializeStatistics();
       });
     }
 
-    const initializedPromise = osInfoPromise;
+    const initializedPromise = dsdkInfoPromise;
 
     return {
       analytics: {
@@ -162,6 +165,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         }
       },
       pinormos: {
+        getCPUInfo,
         getOSInfo,
         isExternal
       },

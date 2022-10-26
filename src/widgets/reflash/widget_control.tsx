@@ -165,7 +165,7 @@ export const ShowControl = (props: Props): JSX.Element => {
         console.log(packrat);
         let path = '';
         try {
-            let files = await props.service.packrat.cache.addPackratFiles([value], Number(packrat!));
+            let files = await props.service.packrat.cache.addPackratFiles(['img'], Number(packrat!));
             path = packrat + "/PR" + packrat + '.img';
             console.log(files);
             console.log(path);

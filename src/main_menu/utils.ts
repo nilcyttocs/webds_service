@@ -26,7 +26,8 @@ const saveImageWidgets = [
   "webds_gear_selection_widget",
   "webds_guided_config_widget",
   "webds_integration_duration_widget",
-  "webds_sensor_mapping_widget"
+  "webds_sensor_mapping_widget",
+  "webds_tutor_initial_setup_widget"
 ];
 
 const toHex = (str: string): string => {

@@ -1,25 +1,26 @@
+import green from "@mui/material/colors/green";
+import red from "@mui/material/colors/red";
+
+const SYNA_BLUE = "#007dc3";
+
 const webdsTheme = (mode: string) => ({
   palette: {
     mode,
     primary: {
-      light: "#5aacf6",
-      main: "#007dc3",
-      dark: "#005192",
-      contrastText: "#fff"
+      main: SYNA_BLUE
     },
-    colors: {
-      green: "#00e676",
-      grey: "#9e9e9e",
-      red: "#d50000"
+    custom: {
+      green: green["A400"],
+      red: red["A700"]
     },
     section:
       mode === "light"
         ? {
-            main: "#f5f5f5",
+            background: "#f5f5f5",
             border: "#e0e0e0"
           }
         : {
-            main: "#212121",
+            background: "#212121",
             border: "#616161"
           }
   },
@@ -31,7 +32,7 @@ const webdsTheme = (mode: string) => ({
   components: {
     MuiAvatar: {
       defaultProps: {
-        sx: { bgcolor: "#007dc3" }
+        sx: { bgcolor: SYNA_BLUE }
       }
     },
     MuiButton: {
@@ -56,7 +57,18 @@ const webdsTheme = (mode: string) => ({
       defaultProps: {
         color: "textPrimary",
         component: "div"
-      }
+      },
+      variants: [
+        {
+          props: { variant: "underline" },
+          style: {
+            fontSize: "0.875rem",
+            fontWeight: 400,
+            lineHeight: 1.43,
+            textDecoration: "underline"
+          }
+        }
+      ]
     }
   }
 });

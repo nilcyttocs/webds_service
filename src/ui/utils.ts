@@ -9,7 +9,7 @@ export const getJupyterFontColor = (): string => {
     .trim();
 };
 
-export const getWebDSTheme = ({inverted = false} = {}) : any => {
+export const getWebDSTheme = ({ inverted = false } = {}): any => {
   let mode: string;
   if (
     window

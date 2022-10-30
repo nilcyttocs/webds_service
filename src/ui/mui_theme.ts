@@ -55,7 +55,7 @@ const webdsTheme = (mode: string) => ({
     },
     MuiTypography: {
       defaultProps: {
-        color: "textPrimary",
+        color: "text.primary",
         component: "div"
       },
       variants: [

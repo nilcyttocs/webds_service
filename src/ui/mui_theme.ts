@@ -9,10 +9,20 @@ const webdsTheme = (mode: string) => ({
     primary: {
       main: SYNA_BLUE
     },
+    divider:
+      mode === "light" ? "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.2)",
     custom: {
       green: green["A400"],
       red: red["A700"]
     },
+    canvas:
+      mode === "light"
+        ? {
+            border: "rgba(0, 0, 0, 0.5)"
+          }
+        : {
+            border: "rgba(255, 255, 255, 0.5)"
+          },
     section:
       mode === "light"
         ? {
@@ -26,7 +36,7 @@ const webdsTheme = (mode: string) => ({
   },
 
   typography: {
-    fontFamily: ["Arial", "Roboto", "Helvetica", "sans-serif"].join(",")
+    fontFamily: "Nunito Sans, Arial, sans-serif"
   },
 
   components: {

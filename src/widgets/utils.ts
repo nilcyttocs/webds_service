@@ -17,6 +17,8 @@ export class WebDSWidget<
   private isScrolling = false;
   private oIframe = document.createElement("iframe");
   private iIframe = document.createElement("iframe");
+  private outerPseudo = document.createElement("div");
+  private innerPseudo = document.createElement("div");
 
   constructor(options: MainAreaWidget.IOptions<T>) {
     super(options);
@@ -25,6 +27,10 @@ export class WebDSWidget<
       "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
     this.iIframe.style.cssText =
       "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
+    this.outerPseudo.style.cssText =
+      "width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: table;";
+    this.innerPseudo.style.cssText =
+      "display: table-cell; vertical-align: middle;";
   }
 
   private _addUsage() {
@@ -78,27 +84,27 @@ export class WebDSWidget<
   }
 
   private _setShadows() {
-    this.widgetContainer = document.getElementById(this.id + "_container");
-    this.widgetContent = document.getElementById(this.id + "_content");
-    this.widgetBody = this.widgetContent?.querySelector(
-      ".jp-webds-widget-body"
+    this._addIframeResizeDetection();
+    this.widgetContent.addEventListener(
+      "scroll",
+      this._addRemoveShadows.bind(this)
     );
-    if (this.widgetContainer && this.widgetContent && this.widgetBody) {
-      this._addIframeResizeDetection();
-      this.widgetContent.addEventListener(
-        "scroll",
-        this._addRemoveShadows.bind(this)
-      );
-      this.widgetContent.addEventListener(
-        "resize",
-        this._addRemoveShadows.bind(this)
-      );
-      setTimeout(() => {
-        if (this.widgetContent.scrollHeight > this.widgetContent.clientHeight) {
-          this.widgetContainer.classList.add("off-bottom");
-        }
-      }, 500);
-    }
+    this.widgetContent.addEventListener(
+      "resize",
+      this._addRemoveShadows.bind(this)
+    );
+    setTimeout(() => {
+      if (this.widgetContent.scrollHeight > this.widgetContent.clientHeight) {
+        this.widgetContainer.classList.add("off-bottom");
+      }
+    }, 500);
+  }
+
+  private _setPseudos() {
+    this.widgetContent.replaceChild(this.innerPseudo, this.widgetBody);
+    this.innerPseudo.appendChild(this.widgetBody);
+    this.widgetContent.replaceChild(this.outerPseudo, this.innerPseudo);
+    this.outerPseudo.appendChild(this.innerPseudo);
   }
 
   protected onAfterAttach(msg: Message) {
@@ -108,7 +114,15 @@ export class WebDSWidget<
 
   protected onActivateRequest(msg: Message) {
     super.onActivateRequest(msg);
-    this._setShadows();
+    this.widgetContainer = document.getElementById(this.id + "_container");
+    this.widgetContent = document.getElementById(this.id + "_content");
+    this.widgetBody = this.widgetContent?.querySelector(
+      ".jp-webds-widget-body"
+    );
+    if (this.widgetContainer && this.widgetContent && this.widgetBody) {
+      this._setPseudos();
+      this._setShadows();
+    }
   }
 
   setShadows() {}

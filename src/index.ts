@@ -52,10 +52,6 @@ export { CPUInfo, OSInfo } from "./pinormos/utils";
 
 export { TouchcommReport } from "./touchcomm/utils";
 
-export { ReflashWidget } from "./widgets/reflash/widget";
-
-export { SensorMappingWidget } from "./widgets/sensor_mapping/widget";
-
 export { WebDSWidget } from "./widgets/utils";
 
 export let stateDB: IStateDB | null = null;

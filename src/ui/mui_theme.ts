@@ -1,4 +1,5 @@
 import green from "@mui/material/colors/green";
+import orange from "@mui/material/colors/orange";
 import red from "@mui/material/colors/red";
 
 const SYNA_BLUE = "#007dc3";
@@ -12,8 +13,9 @@ const webdsTheme = (mode: string) => ({
     divider:
       mode === "light" ? "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.2)",
     custom: {
-      green: green["A400"],
-      red: red["A700"]
+      fail: red["A700"],
+      pass: green["A400"],
+      progress: orange[400]
     },
     canvas:
       mode === "light"

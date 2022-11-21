@@ -2,6 +2,8 @@ import { stateDB } from "../index";
 
 import { getCPUInfo, getOSInfo } from "../pinormos/utils";
 
+import { focusTracker } from "../widgets/utils";
+
 const STATISTICS_DB_NAME = "@webds/service:statistics";
 
 type Statistics = {
@@ -48,8 +50,20 @@ export const addStaticConfigUsage = async (
 ) => {
   if (stateDB && statistics.initialized) {
     statistics.data[statistics.version].staticConfig[target][configName] =
-      statistics.data[statistics.version].staticConfig[target][configName] +
-        1 || 1;
+      statistics.data[statistics.version].staticConfig[target][configName] ||
+      {};
+    statistics.data[statistics.version].staticConfig[target][configName].total =
+      statistics.data[statistics.version].staticConfig[target][configName]
+        .total + 1 || 1;
+    if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
+      const label = focusTracker.currentWidget.title.label;
+      statistics.data[statistics.version].staticConfig[target][configName][
+        label
+      ] =
+        statistics.data[statistics.version].staticConfig[target][configName][
+          label
+        ] + 1 || 1;
+    }
     try {
       //await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {

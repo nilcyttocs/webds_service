@@ -1,5 +1,7 @@
 import { requestAPI } from "../handler";
 
+import { addStaticConfigUsage } from "../analytics/utils";
+
 export type TouchcommReport = {
   image: number[][];
   hybridx: number[];
@@ -159,4 +161,7 @@ export const writeStaticConfig = async (
       return Promise.reject("Failed to write config to flash");
     }
   }
+  entries.forEach((item) => {
+    addStaticConfigUsage(item.name, commit ? "toFlash" : "toRAM");
+  });
 };

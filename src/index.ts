@@ -37,7 +37,15 @@ import {
   updateDSDKInfo
 } from "./pinormos/utils";
 
-import { getPackratID, getPartNumber } from "./touchcomm/utils";
+import {
+  ConfigEntry,
+  getPackratID,
+  getPartNumber,
+  readDynamicConfig,
+  readStaticConfig,
+  writeDynamicConfig,
+  writeStaticConfig
+} from "./touchcomm/utils";
 
 import {
   getJupyterFontColor,
@@ -50,7 +58,7 @@ import {
 
 export { CPUInfo, OSInfo } from "./pinormos/utils";
 
-export { TouchcommReport } from "./touchcomm/utils";
+export { ConfigEntry, TouchcommReport } from "./touchcomm/utils";
 
 export { WebDSWidget } from "./widgets/utils";
 
@@ -87,6 +95,10 @@ export type WebDSService = {
   touchcomm: {
     getPackratID: () => Promise<number>;
     getPartNumber: () => Promise<string>;
+    readDynamicConfig: () => Promise<any>;
+    readStaticConfig: () => Promise<any>;
+    writeDynamicConfig: (entries: ConfigEntry[]) => void;
+    writeStaticConfig: (entries: ConfigEntry[], commit: boolean) => void;
   };
   ui: {
     getJupyterFontColor: () => string;
@@ -167,7 +179,11 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       },
       touchcomm: {
         getPackratID,
-        getPartNumber
+        getPartNumber,
+        readDynamicConfig,
+        readStaticConfig,
+        writeDynamicConfig,
+        writeStaticConfig
       },
       ui: {
         getJupyterFontColor,

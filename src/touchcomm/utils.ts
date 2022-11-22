@@ -47,11 +47,6 @@ export const getPartNumber = async (): Promise<string> => {
   }
 };
 
-export type ConfigEntry = {
-  name: string;
-  value: any;
-};
-
 export const readDynamicConfig = async (): Promise<any> => {
   const dataToSend = {
     command: "getDynamicConfig"
@@ -68,23 +63,20 @@ export const readDynamicConfig = async (): Promise<any> => {
   }
 };
 
-export const writeDynamicConfig = async (entries: ConfigEntry[]) => {
+export const writeDynamicConfig = async (entries: any) => {
   let config: any;
   try {
     config = await readDynamicConfig();
   } catch (error) {
     return Promise.reject(error);
   }
-  entries.forEach((item) => {
-    if (item.name in config) {
-      config[item.name] = item.value;
-    } else {
-      return Promise.reject(
-        `${item.name} config entry not found in dynamic config`
-      );
+  Object.keys(entries).forEach((item) => {
+    if (!(item in config)) {
+      return Promise.reject(`${item} config entry not found in dynamic config`);
     }
   });
-  let dataToSend = {
+  config = { ...config, ...entries };
+  const dataToSend = {
     command: "setDynamicConfig",
     payload: [config]
   };
@@ -115,25 +107,19 @@ export const readStaticConfig = async (): Promise<any> => {
   }
 };
 
-export const writeStaticConfig = async (
-  entries: ConfigEntry[],
-  commit: boolean
-) => {
+export const writeStaticConfig = async (entries: any, commit: boolean) => {
   let config: any;
   try {
     config = await readStaticConfig();
   } catch (error) {
     return Promise.reject(error);
   }
-  entries.forEach((item) => {
-    if (item.name in config) {
-      config[item.name] = item.value;
-    } else {
-      return Promise.reject(
-        `${item.name} config entry not found in static config`
-      );
+  Object.keys(entries).forEach((item) => {
+    if (!(item in config)) {
+      return Promise.reject(`${item} config entry not found in static config`);
     }
   });
+  config = { ...config, ...entries };
   let dataToSend: any = {
     command: "setStaticConfig",
     payload: [config]
@@ -161,7 +147,7 @@ export const writeStaticConfig = async (
       return Promise.reject("Failed to write config to flash");
     }
   }
-  entries.forEach((item) => {
-    addStaticConfigUsage(item.name, commit ? "toFlash" : "toRAM");
+  Object.keys(entries).forEach((item) => {
+    addStaticConfigUsage(item, commit ? "toFlash" : "toRAM");
   });
 };

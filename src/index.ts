@@ -38,7 +38,6 @@ import {
 } from "./pinormos/utils";
 
 import {
-  ConfigEntry,
   getPackratID,
   getPartNumber,
   readDynamicConfig,
@@ -58,7 +57,7 @@ import {
 
 export { CPUInfo, OSInfo } from "./pinormos/utils";
 
-export { ConfigEntry, TouchcommReport } from "./touchcomm/utils";
+export { TouchcommReport } from "./touchcomm/utils";
 
 export { WebDSWidget } from "./widgets/utils";
 
@@ -97,8 +96,8 @@ export type WebDSService = {
     getPartNumber: () => Promise<string>;
     readDynamicConfig: () => Promise<any>;
     readStaticConfig: () => Promise<any>;
-    writeDynamicConfig: (entries: ConfigEntry[]) => void;
-    writeStaticConfig: (entries: ConfigEntry[], commit: boolean) => void;
+    writeDynamicConfig: (entries: any) => void;
+    writeStaticConfig: (entries: any, commit: boolean) => void;
   };
   ui: {
     getJupyterFontColor: () => string;

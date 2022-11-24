@@ -101,6 +101,9 @@ export class WebDSWidget<
   }
 
   private _setPseudos() {
+    if (this.widgetContent.contains(this.outerPseudo)) {
+      return;
+    }
     this.widgetContent.replaceChild(this.innerPseudo, this.widgetBody);
     this.innerPseudo.appendChild(this.widgetBody);
     this.widgetContent.replaceChild(this.outerPseudo, this.innerPseudo);

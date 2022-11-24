@@ -255,6 +255,18 @@ export const pollRepo = async () => {
     try {
       await downloadTarball();
       osInfo.repo.downloaded = true;
+      let e = document.getElementById(
+        "webds-launcher-card-DSDK-Update-red-dot"
+      );
+      if (e) {
+        e.style.display = "block";
+      }
+      e = document.getElementById(
+        "webds-launcher-card-DSDK-Update-fav-red-dot"
+      );
+      if (e) {
+        e.style.display = "block";
+      }
       return;
     } catch (error) {
       console.error(error);
@@ -268,6 +280,18 @@ export const pollStash = async () => {
   try {
     const data = await requestAPI<any>("data-collection");
     stashInfo.dataAvailable = data.stash.length > 0;
+    let e = document.getElementById(
+      "webds-launcher-card-Data-Collection-red-dot"
+    );
+    if (e && window.navigator.onLine) {
+      e.style.display = stashInfo.dataAvailable ? "block" : "none";
+    }
+    e = document.getElementById(
+      "webds-launcher-card-Data-Collection-fav-red-dot"
+    );
+    if (e && window.navigator.onLine) {
+      e.style.display = stashInfo.dataAvailable ? "block" : "none";
+    }
   } catch (error) {
     console.error(`Error - GET /webds/data-collection\n${error}`);
   }

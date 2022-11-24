@@ -31,9 +31,12 @@ import {
   CPUInfo,
   getCPUInfo,
   getOSInfo,
+  getStashInfo,
   isExternal,
   OSInfo,
   pollRepo,
+  pollStash,
+  StashInfo,
   updateDSDKInfo
 } from "./pinormos/utils";
 
@@ -55,7 +58,7 @@ import {
   setWebDSLauncherModel
 } from "./ui/utils";
 
-export { CPUInfo, OSInfo } from "./pinormos/utils";
+export { CPUInfo, OSInfo, StashInfo } from "./pinormos/utils";
 
 export { TouchcommReport } from "./touchcomm/utils";
 
@@ -89,6 +92,7 @@ export type WebDSService = {
   pinormos: {
     getCPUInfo: () => CPUInfo;
     getOSInfo: () => OSInfo;
+    getStashInfo: () => StashInfo;
     isExternal: () => boolean;
   };
   touchcomm: {
@@ -137,6 +141,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
 
     dsdkInfoPromise.then(() => {
       pollRepo();
+      pollStash();
       addMenu(app, mainMenu);
     });
 
@@ -174,6 +179,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       pinormos: {
         getCPUInfo,
         getOSInfo,
+        getStashInfo,
         isExternal
       },
       touchcomm: {

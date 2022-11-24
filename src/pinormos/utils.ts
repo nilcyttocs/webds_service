@@ -38,6 +38,10 @@ export interface CPUInfo {
   Model: string;
 }
 
+export interface StashInfo {
+  dataAvailable: boolean;
+}
+
 const dropboxLocation = "/var/spool/syna/softwareupdater";
 
 const dropboxcEndpoint = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
@@ -47,7 +51,14 @@ const repoListURL =
 
 const pollRepoPeriod = 2 * 60 * 1000;
 
-const streamingWidgets = ["webds_heatmap_widget", "webds_touch_widget"];
+const pollStashPeriod = 2 * 1000;
+
+const streamingWidgets = [
+  "webds_data_collection",
+  "webds_heatmap_widget",
+  "webds_integration_duration",
+  "webds_touch_widget"
+];
 
 const osInfo: OSInfo = {
   current: {
@@ -64,6 +75,8 @@ const osInfo: OSInfo = {
 };
 
 let cpuInfo: CPUInfo;
+
+let stashInfo: StashInfo;
 
 const _findObject = (array: any[], keyValue: any): any => {
   const result = array.filter(function (object) {
@@ -251,6 +264,17 @@ export const pollRepo = async () => {
   setTimeout(pollRepo, pollRepoPeriod);
 };
 
+export const pollStash = async () => {
+  try {
+    const data = await requestAPI<any>("data-collection");
+    stashInfo.dataAvailable = data.stash.length > 0;
+  } catch (error) {
+    console.error(`Error - GET /webds/data-collection\n${error}`);
+  }
+
+  setTimeout(pollStash, pollStashPeriod);
+};
+
 export const updateDSDKInfo = async () => {
   try {
     const data = await requestAPI<any>("about?query=os-info");
@@ -265,6 +289,13 @@ export const updateDSDKInfo = async () => {
     console.error(`Error - GET /webds/about?query=cpu-info\n${error}`);
     Promise.reject(error);
   }
+  try {
+    const data = await requestAPI<any>("data-collection");
+    stashInfo = { dataAvailable: data.stash.length > 0 };
+  } catch (error) {
+    console.error(`Error - GET /webds/data-collection\n${error}`);
+    Promise.reject(error);
+  }
 };
 
 export const getOSInfo = (): OSInfo => {
@@ -273,6 +304,10 @@ export const getOSInfo = (): OSInfo => {
 
 export const getCPUInfo = (): CPUInfo => {
   return cpuInfo;
+};
+
+export const getStashInfo = (): StashInfo => {
+  return stashInfo;
 };
 
 export const isExternal = (): boolean => {

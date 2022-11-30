@@ -49,6 +49,8 @@ const dropboxcEndpoint = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
 const repoListURL =
   "http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&sort=name&direction=desc";
 
+const testrailURL = "http://nexus.synaptics.com:8083/TestRail/get_projects";
+
 const pollRepoPeriod = 2 * 60 * 1000;
 
 const pollStashPeriod = 2 * 1000;
@@ -77,6 +79,8 @@ const osInfo: OSInfo = {
 let cpuInfo: CPUInfo;
 
 let stashInfo: StashInfo;
+
+let testrailOnline: boolean;
 
 const _findObject = (array: any[], keyValue: any): any => {
   const result = array.filter(function (object) {
@@ -283,13 +287,13 @@ export const pollStash = async () => {
     let e = document.getElementById(
       "webds-launcher-card-Data-Collection-red-dot"
     );
-    if (e && window.navigator.onLine) {
+    if (e && testrailOnline) {
       e.style.display = stashInfo.dataAvailable ? "block" : "none";
     }
     e = document.getElementById(
       "webds-launcher-card-Data-Collection-fav-red-dot"
     );
-    if (e && window.navigator.onLine) {
+    if (e && testrailOnline) {
       e.style.display = stashInfo.dataAvailable ? "block" : "none";
     }
   } catch (error) {
@@ -320,6 +324,18 @@ export const updateDSDKInfo = async () => {
     console.error(`Error - GET /webds/data-collection\n${error}`);
     Promise.reject(error);
   }
+  try {
+    const request = new Request(testrailURL, {
+      method: "GET",
+      mode: "cors",
+      headers: new Headers(),
+      referrerPolicy: "no-referrer"
+    });
+    await fetch(request);
+    testrailOnline = true;
+  } catch {
+    testrailOnline = false;
+  }
 };
 
 export const getOSInfo = (): OSInfo => {
@@ -336,4 +352,8 @@ export const getStashInfo = (): StashInfo => {
 
 export const isExternal = (): boolean => {
   return osInfo.current.version.endsWith("E");
+};
+
+export const isTestRailOnline = (): boolean => {
+  return testrailOnline;
 };

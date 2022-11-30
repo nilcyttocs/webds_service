@@ -33,6 +33,7 @@ import {
   getOSInfo,
   getStashInfo,
   isExternal,
+  isTestRailOnline,
   OSInfo,
   pollRepo,
   pollStash,
@@ -94,6 +95,7 @@ export type WebDSService = {
     getOSInfo: () => OSInfo;
     getStashInfo: () => StashInfo;
     isExternal: () => boolean;
+    isTestRailOnline: () => boolean;
   };
   touchcomm: {
     getPackratID: () => Promise<number>;
@@ -180,7 +182,8 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         getCPUInfo,
         getOSInfo,
         getStashInfo,
-        isExternal
+        isExternal,
+        isTestRailOnline
       },
       touchcomm: {
         getPackratID,

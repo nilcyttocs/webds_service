@@ -2,10 +2,24 @@ import { requestAPI } from "../handler";
 
 import { addStaticConfigUsage } from "../analytics/utils";
 
-export type TouchcommReport = {
+export type TouchcommADCReport = {
   image: number[][];
   hybridx: number[];
   hybridy: number[];
+};
+
+export type TouchcommPositionData = {
+  objectIndex: number;
+  classification: number;
+  xMeas: number;
+  yMeas: number;
+  z: number;
+  xWidth: number;
+  yWidth: number;
+};
+
+export type TouchcommTouchReport = {
+  pos?: TouchcommPositionData[];
 };
 
 const getIdentify = async (): Promise<any> => {

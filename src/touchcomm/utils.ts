@@ -22,6 +22,8 @@ export type TouchcommTouchReport = {
   pos?: TouchcommPositionData[];
 };
 
+export type TouchcommTraceReport = { xTrace: number[][]; yTrace: number[][] };
+
 const getIdentify = async (): Promise<any> => {
   const dataToSend: any = {
     command: "identify"

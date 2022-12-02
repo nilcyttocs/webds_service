@@ -64,7 +64,8 @@ export { CPUInfo, OSInfo, StashInfo } from "./pinormos/utils";
 export {
   TouchcommADCReport,
   TouchcommPositionData,
-  TouchcommTouchReport
+  TouchcommTouchReport,
+  TouchcommTraceReport
 } from "./touchcomm/utils";
 
 export { WebDSWidget } from "./widgets/utils";

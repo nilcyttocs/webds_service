@@ -38,9 +38,7 @@ export class WebDSWidget<
       "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
     this.iIframe.style.cssText =
       "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
-    this.widgetContainer.setAttribute("id", this.id + "_container");
     this.widgetContainer.classList.add("jp-webds-widget-container");
-    this.widgetContent.setAttribute("id", this.id + "_content");
     this.widgetContent.classList.add("jp-webds-widget");
     this.shadowTop.classList.add("jp-webds-widget-shadow");
     this.shadowTop.classList.add("jp-webds-widget-shadow-top");
@@ -135,10 +133,10 @@ export class WebDSWidget<
   }
 
   private _setParents() {
-    if (this.widgetContainer.contains(this.widgetComponent)) {
+    if (this.widgetContainer.contains(this.widgetBody)) {
       return;
     }
-    insertParentElement(this.widgetComponent, this.widgetContent);
+    insertParentElement(this.widgetBody, this.widgetContent);
     insertParentElement(this.widgetContent, this.widgetContainer);
   }
 
@@ -154,6 +152,7 @@ export class WebDSWidget<
       ".jp-webds-widget-body"
     );
     if (this.widgetComponent && this.widgetBody) {
+      this.widgetComponent.style.cssText = "width: 100%; height: 100%; position: relative";
       this._setParents();
       this._setPseudos();
       this._setShadows();

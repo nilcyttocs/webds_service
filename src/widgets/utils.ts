@@ -8,15 +8,26 @@ import { addExtensionUsage } from "../analytics/utils";
 
 export const focusTracker: FocusTracker<WebDSWidget> = new FocusTracker();
 
+const insertParentElement = (child: HTMLElement, newParent: HTMLElement) => {
+  const parent = child.parentNode;
+  if (parent) {
+    parent.replaceChild(newParent, child);
+    newParent.appendChild(child);
+  }
+};
+
 export class WebDSWidget<
   T extends ReactWidget = ReactWidget
 > extends MainAreaWidget {
-  private widgetContainer: any;
-  private widgetContent: any;
   private widgetBody: any;
+  private widgetComponent: any;
   private isScrolling = false;
   private oIframe = document.createElement("iframe");
   private iIframe = document.createElement("iframe");
+  private widgetContainer = document.createElement("div");
+  private widgetContent = document.createElement("div");
+  private shadowTop = document.createElement("div");
+  private shadowBottom = document.createElement("div");
   private outerPseudo = document.createElement("div");
   private innerPseudo = document.createElement("div");
 
@@ -27,6 +38,14 @@ export class WebDSWidget<
       "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
     this.iIframe.style.cssText =
       "width: 0; height: 100%; margin: 0; padding: 0; position: absolute; background-color: transparent; overflow: hidden; border-width: 0;";
+    this.widgetContainer.setAttribute("id", this.id + "_container");
+    this.widgetContainer.classList.add("jp-webds-widget-container");
+    this.widgetContent.setAttribute("id", this.id + "_content");
+    this.widgetContent.classList.add("jp-webds-widget");
+    this.shadowTop.classList.add("jp-webds-widget-shadow");
+    this.shadowTop.classList.add("jp-webds-widget-shadow-top");
+    this.shadowBottom.classList.add("jp-webds-widget-shadow");
+    this.shadowBottom.classList.add("jp-webds-widget-shadow-bottom");
     this.outerPseudo.style.cssText =
       "width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: table;";
     this.innerPseudo.style.cssText =
@@ -84,6 +103,13 @@ export class WebDSWidget<
   }
 
   private _setShadows() {
+    if (
+      !this.widgetContainer.contains(this.shadowTop) &&
+      !this.widgetContainer.contains(this.shadowBottom)
+    ) {
+      this.widgetContainer.appendChild(this.shadowTop);
+      this.widgetContainer.appendChild(this.shadowBottom);
+    }
     this._addIframeResizeDetection();
     this.widgetContent.addEventListener(
       "scroll",
@@ -104,10 +130,16 @@ export class WebDSWidget<
     if (this.widgetContent.contains(this.outerPseudo)) {
       return;
     }
-    this.widgetContent.replaceChild(this.innerPseudo, this.widgetBody);
-    this.innerPseudo.appendChild(this.widgetBody);
-    this.widgetContent.replaceChild(this.outerPseudo, this.innerPseudo);
-    this.outerPseudo.appendChild(this.innerPseudo);
+    insertParentElement(this.widgetBody, this.innerPseudo);
+    insertParentElement(this.innerPseudo, this.outerPseudo);
+  }
+
+  private _setParents() {
+    if (this.widgetContainer.contains(this.widgetComponent)) {
+      return;
+    }
+    insertParentElement(this.widgetComponent, this.widgetContent);
+    insertParentElement(this.widgetContent, this.widgetContainer);
   }
 
   protected onAfterAttach(msg: Message) {
@@ -117,12 +149,12 @@ export class WebDSWidget<
 
   protected onActivateRequest(msg: Message) {
     super.onActivateRequest(msg);
-    this.widgetContainer = document.getElementById(this.id + "_container");
-    this.widgetContent = document.getElementById(this.id + "_content");
-    this.widgetBody = this.widgetContent?.querySelector(
+    this.widgetComponent = document.getElementById(this.id + "_component");
+    this.widgetBody = this.widgetComponent?.querySelector(
       ".jp-webds-widget-body"
     );
-    if (this.widgetContainer && this.widgetContent && this.widgetBody) {
+    if (this.widgetComponent && this.widgetBody) {
+      this._setParents();
       this._setPseudos();
       this._setShadows();
     }

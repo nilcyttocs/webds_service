@@ -309,20 +309,20 @@ export const updateDSDKInfo = async () => {
     osInfo.current.version = data["VERSION_ID"].replace(/\"/g, "");
   } catch (error) {
     console.error(`Error - GET /webds/about?query=os-info\n${error}`);
-    Promise.reject(error);
+    return Promise.reject(error);
   }
   try {
     cpuInfo = await requestAPI<any>("about?query=cpu-info");
   } catch (error) {
     console.error(`Error - GET /webds/about?query=cpu-info\n${error}`);
-    Promise.reject(error);
+    return Promise.reject(error);
   }
   try {
     const data = await requestAPI<any>("data-collection");
     stashInfo = { dataAvailable: data.stash.length > 0 };
   } catch (error) {
     console.error(`Error - GET /webds/data-collection\n${error}`);
-    Promise.reject(error);
+    return Promise.reject(error);
   }
   try {
     const request = new Request(testrailURL, {
@@ -336,6 +336,7 @@ export const updateDSDKInfo = async () => {
   } catch {
     testrailOnline = false;
   }
+  return Promise.resolve();
 };
 
 export const getOSInfo = (): OSInfo => {

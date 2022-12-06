@@ -78,7 +78,7 @@ export type WebDSService = {
     addStaticConfigUsage: (configName: string, target: string) => void;
   };
   greeting: () => void;
-  initialized: Promise<null>;
+  initialized: Promise<void>;
   packrat: {
     cache: {
       addApplicationHex: (packratID?: number | undefined) => Promise<string>;
@@ -133,33 +133,25 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
   optional: [IStateDB],
   requires: [IMainMenu],
   provides: WebDSService,
-  activate: (
+  activate: async (
     app: JupyterFrontEnd,
     mainMenu: IMainMenu,
     state: IStateDB | null
-  ): WebDSService => {
+  ): Promise<WebDSService> => {
     console.log("JupyterLab extension @webds/service is activated!");
 
-    const dsdkInfoPromise = new Promise<null>(function (resolve, reject) {
-      updateDSDKInfo().then(() => {
-        resolve(null);
-      });
-    });
+    const initializedPromise = updateDSDKInfo();
 
-    dsdkInfoPromise.then(() => {
-      pollRepo();
-      pollStash();
-      addMenu(app, mainMenu);
-    });
+    await initializedPromise;
 
+    pollRepo();
+    pollStash();
+    addMenu(app, mainMenu);
     if (state) {
-      dsdkInfoPromise.then(() => {
-        stateDB = state;
-        initializeStatistics();
-      });
+      initializeStatistics();
     }
 
-    const initializedPromise = dsdkInfoPromise;
+    console.log("JupyterLab extension @webds/service is initialized!");
 
     return {
       analytics: {

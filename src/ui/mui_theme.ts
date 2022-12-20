@@ -65,6 +65,12 @@ const webdsTheme = (mode: string) => ({
         size: "small"
       }
     },
+    MuiTooltip: {
+      defaultProps: {
+        enterDelay: 300,
+        enterNextDelay: 300
+      }
+    },
     MuiTypography: {
       defaultProps: {
         color: "text.primary",

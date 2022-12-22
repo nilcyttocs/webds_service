@@ -2,11 +2,15 @@ import { requestAPI } from "../handler";
 
 import { addStaticConfigUsage } from "../analytics/utils";
 
-export type TouchcommADCReport = {
-  image: number[][];
-  hybridx: number[];
-  hybridy: number[];
-};
+export type TouchcommADCReport = [
+  string,
+  {
+    image: number[][];
+    hybridx: number[];
+    hybridy: number[];
+    buttons?: number[];
+  }
+];
 
 export type TouchcommPositionData = {
   objectIndex: number;
@@ -18,9 +22,13 @@ export type TouchcommPositionData = {
   yWidth: number;
 };
 
-export type TouchcommTouchReport = {
-  pos?: TouchcommPositionData[];
-};
+export type TouchcommTouchReport = [
+  string,
+  {
+    buttonState?: any[];
+    pos?: TouchcommPositionData[];
+  }
+];
 
 export type TouchcommTraceReport = { xTrace: number[][]; yTrace: number[][] };
 

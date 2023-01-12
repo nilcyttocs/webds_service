@@ -1,11 +1,11 @@
-import { createTheme, ThemeOptions } from "@mui/material/styles";
+import { createTheme, ThemeOptions } from '@mui/material/styles';
 
-import webdsTheme from "./mui_theme";
+import webdsTheme from './mui_theme';
 
 export const getJupyterFontColor = (): string => {
   return window
     .getComputedStyle(document.documentElement)
-    .getPropertyValue("--jp-ui-font-color1")
+    .getPropertyValue('--jp-ui-font-color1')
     .trim();
 };
 
@@ -14,12 +14,12 @@ export const getWebDSTheme = ({ inverted = false } = {}): any => {
   if (
     window
       .getComputedStyle(document.documentElement)
-      .getPropertyValue("--jp-layout-color0")
-      .includes("white")
+      .getPropertyValue('--jp-layout-color0')
+      .includes('white')
   ) {
-    mode = inverted ? "dark" : "light";
+    mode = inverted ? 'dark' : 'light';
   } else {
-    mode = inverted ? "light" : "dark";
+    mode = inverted ? 'light' : 'dark';
   }
   return createTheme(webdsTheme(mode) as ThemeOptions);
 };

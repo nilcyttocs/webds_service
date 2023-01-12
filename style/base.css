@@ -1,7 +1,7 @@
 @font-face {
   font-family: Nunito Sans;
-  src: url("./fonts/nunito_sans/nunito-sans-v12-latin-regular.woff2");
-  format: ("woff2");
+  src: url('./fonts/nunito_sans/nunito-sans-v12-latin-regular.woff2');
+  format: ('woff2');
   font-display: swap;
 }
 

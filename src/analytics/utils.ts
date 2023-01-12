@@ -1,10 +1,8 @@
-import { stateDB } from "../index";
+import { stateDB } from '../index';
+import { getCPUInfo, getOSInfo } from '../pinormos/utils';
+import { focusTracker } from '../widgets/utils';
 
-import { getCPUInfo, getOSInfo } from "../pinormos/utils";
-
-import { focusTracker } from "../widgets/utils";
-
-const STATISTICS_DB_NAME = "@webds/service:statistics";
+const STATISTICS_DB_NAME = '@webds/service:statistics';
 
 type Statistics = {
   dbName: string;
@@ -16,7 +14,7 @@ type Statistics = {
 export const statistics: Statistics = {
   dbName: STATISTICS_DB_NAME,
   data: {},
-  version: "",
+  version: '',
   initialized: false
 };
 

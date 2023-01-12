@@ -1,6 +1,6 @@
-import { requestAPI } from "../handler";
-
-import { focusTracker } from "../widgets/utils";
+import { requestAPI } from '../handler';
+import { stateDB } from '../index';
+import { focusTracker } from '../widgets/utils';
 
 export interface OSInfo {
   current: {
@@ -17,21 +17,21 @@ export interface OSInfo {
 }
 
 type ProcessorType = {
-  "model name": string;
+  'model name': string;
   BogoMIPS: string;
   Features: string;
-  "CPU implementer": string;
-  "CPU architecture": string;
-  "CPU variant": string;
-  "CPU part": string;
-  "CPU revision": string;
+  'CPU implementer': string;
+  'CPU architecture': string;
+  'CPU variant': string;
+  'CPU part': string;
+  'CPU revision': string;
 };
 
 export interface CPUInfo {
-  "processor 0": ProcessorType;
-  "processor 1": ProcessorType;
-  "processor 2": ProcessorType;
-  "processor 3": ProcessorType;
+  'processor 0': ProcessorType;
+  'processor 1': ProcessorType;
+  'processor 2': ProcessorType;
+  'processor 3': ProcessorType;
   Hardware: string;
   Revision: string;
   Serial: string;
@@ -42,36 +42,42 @@ export interface StashInfo {
   dataAvailable: boolean;
 }
 
-const dropboxLocation = "/var/spool/syna/softwareupdater";
+export interface WebDSSettings {
+  renderRate: number | undefined;
+}
 
-const dropboxcEndpoint = "%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater";
+const SETTINGS_DB_NAME = '@webds/service:settings';
+
+const dropboxLocation = '/var/spool/syna/softwareupdater';
+
+const dropboxcEndpoint = '%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater';
 
 const repoListURL =
-  "http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&sort=name&direction=desc";
+  'http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&sort=name&direction=desc';
 
-const testrailURL = "http://nexus.synaptics.com:8083/TestRail/get_projects";
+const testrailURL = 'http://nexus.synaptics.com:8083/TestRail/get_projects';
 
 const pollRepoPeriod = 2 * 60 * 1000;
 
 const pollStashPeriod = 2 * 1000;
 
 const streamingWidgets = [
-  "webds_data_collection",
-  "webds_heatmap_widget",
-  "webds_integration_duration",
-  "webds_touch_widget"
+  'webds_data_collection',
+  'webds_heatmap_widget',
+  'webds_integration_duration',
+  'webds_touch_widget'
 ];
 
 const osInfo: OSInfo = {
   current: {
-    version: ""
+    version: ''
   },
   repo: {
-    version: "",
-    tarballUrl: "",
-    tarballName: "",
-    manifestUrl: "",
-    manifestName: "",
+    version: '',
+    tarballUrl: '',
+    tarballName: '',
+    manifestUrl: '',
+    manifestName: '',
     downloaded: false
   }
 };
@@ -81,6 +87,10 @@ let cpuInfo: CPUInfo;
 let stashInfo: StashInfo;
 
 let testrailOnline: boolean;
+
+let webdsSettings: WebDSSettings = {
+  renderRate: undefined
+};
 
 const _findObject = (array: any[], keyValue: any): any => {
   const result = array.filter(function (object) {
@@ -106,7 +116,7 @@ const _findEntry = (root: any, path: string[], entry: string): boolean => {
 const checkDropbox = async () => {
   try {
     const dropboxDir = await requestAPI<any>(
-      "filesystem?dir=" + dropboxcEndpoint
+      'filesystem?dir=' + dropboxcEndpoint
     );
     console.log(dropboxDir);
     if (
@@ -119,19 +129,19 @@ const checkDropbox = async () => {
     console.error(
       `Error - GET /webds/filesystem?dir=${dropboxcEndpoint}\n${error}`
     );
-    return Promise.reject("Failed to check for presence of tarball in dropbox");
+    return Promise.reject('Failed to check for presence of tarball in dropbox');
   }
 };
 
 const checkRepo = async () => {
   const requestHeaders: HeadersInit = new Headers();
-  requestHeaders.set("Content-Type", "application/json");
+  requestHeaders.set('Content-Type', 'application/json');
 
   const request = new Request(repoListURL, {
-    method: "GET",
-    mode: "cors",
+    method: 'GET',
+    mode: 'cors',
     headers: requestHeaders,
-    referrerPolicy: "no-referrer"
+    referrerPolicy: 'no-referrer'
   });
 
   let response: Response;
@@ -139,7 +149,7 @@ const checkRepo = async () => {
     response = await fetch(request);
   } catch (error) {
     console.error(`Error - GET ${repoListURL}\n${error}`);
-    return Promise.reject("Failed to retrieve tarball repo listing");
+    return Promise.reject('Failed to retrieve tarball repo listing');
   }
 
   let data: any = await response.text();
@@ -148,51 +158,51 @@ const checkRepo = async () => {
       data = JSON.parse(data);
     } catch {
       return Promise.reject(
-        "Invalid data content in tarball repo response body"
+        'Invalid data content in tarball repo response body'
       );
     }
     let index: number;
-    if (osInfo.current.version.endsWith("E")) {
+    if (osInfo.current.version.endsWith('E')) {
       index = data.items.findIndex((item: any) => {
-        return item.path.includes("External/tarball");
+        return item.path.includes('External/tarball');
       });
     } else {
       index = data.items.findIndex((item: any) => {
-        return item.path.includes("Internal/tarball");
+        return item.path.includes('Internal/tarball');
       });
     }
     if (index === -1) {
       return;
     }
     const path = data.items[index].path;
-    const version = path.match(/pinormos-.+?(?=-)/g)![0].split("-")[1];
+    const version = path.match(/pinormos-.+?(?=-)/g)![0].split('-')[1];
     osInfo.repo.version = version;
     osInfo.repo.tarballUrl = data.items[index].downloadUrl;
     osInfo.repo.manifestUrl = data.items[index + 1].downloadUrl;
     osInfo.repo.tarballName = data.items[index].path.match(/[^/]*$/)[0];
     osInfo.repo.manifestName = data.items[index + 1].path.match(/[^/]*$/)[0];
   } else {
-    return Promise.reject("No data content in tarball repo response body");
+    return Promise.reject('No data content in tarball repo response body');
   }
 };
 
 const downloadTarball = async () => {
   const requestHeaders: HeadersInit = new Headers();
-  requestHeaders.set("Content-Type", "application/x-tgz");
+  requestHeaders.set('Content-Type', 'application/x-tgz');
 
   console.log(`Downloading tarball from ${osInfo.repo.tarballUrl}`);
   let request = new Request(osInfo.repo.tarballUrl, {
-    method: "GET",
-    mode: "cors",
+    method: 'GET',
+    mode: 'cors',
     headers: requestHeaders,
-    referrerPolicy: "no-referrer"
+    referrerPolicy: 'no-referrer'
   });
   let response: Response;
   try {
     response = await fetch(request);
   } catch (error) {
     console.error(`Error - GET ${osInfo.repo.tarballUrl}\n${error}`);
-    return Promise.reject("Failed to download tarball");
+    return Promise.reject('Failed to download tarball');
   }
   const tarballBlob = await response.blob();
   const tarballFile = new File([tarballBlob], osInfo.repo.tarballName);
@@ -200,34 +210,34 @@ const downloadTarball = async () => {
 
   console.log(`Downloading manifest from ${osInfo.repo.manifestUrl}`);
   request = new Request(osInfo.repo.manifestUrl, {
-    method: "GET",
-    mode: "cors",
+    method: 'GET',
+    mode: 'cors',
     headers: requestHeaders,
-    referrerPolicy: "no-referrer"
+    referrerPolicy: 'no-referrer'
   });
   try {
     response = await fetch(request);
   } catch (error) {
     console.error(`Error - GET ${osInfo.repo.manifestUrl}\n${error}`);
-    return Promise.reject("Failed to download manifest");
+    return Promise.reject('Failed to download manifest');
   }
   const manifestBlob = await response.blob();
   const manifestFile = new File([manifestBlob], osInfo.repo.manifestName);
   console.log(manifestFile);
 
-  console.log("Uploading tarball and manifest to dropbox");
+  console.log('Uploading tarball and manifest to dropbox');
   const formData = new FormData();
-  formData.append("files", tarballFile);
-  formData.append("files", manifestFile);
-  formData.append("location", dropboxLocation);
+  formData.append('files', tarballFile);
+  formData.append('files', manifestFile);
+  formData.append('location', dropboxLocation);
   try {
-    await requestAPI<any>("filesystem", {
+    await requestAPI<any>('filesystem', {
       body: formData,
-      method: "POST"
+      method: 'POST'
     });
   } catch (error) {
     console.error(`Error - POST /webds/filesystem\n${error}`);
-    return Promise.reject("Failed to upload tarball files to dropbox");
+    return Promise.reject('Failed to upload tarball files to dropbox');
   }
 };
 
@@ -260,16 +270,16 @@ export const pollRepo = async () => {
       await downloadTarball();
       osInfo.repo.downloaded = true;
       let e = document.getElementById(
-        "webds-launcher-card-DSDK-Update-red-dot"
+        'webds-launcher-card-DSDK-Update-red-dot'
       );
       if (e) {
-        e.style.display = "block";
+        e.style.display = 'block';
       }
       e = document.getElementById(
-        "webds-launcher-card-DSDK-Update-fav-red-dot"
+        'webds-launcher-card-DSDK-Update-fav-red-dot'
       );
       if (e) {
-        e.style.display = "block";
+        e.style.display = 'block';
       }
       return;
     } catch (error) {
@@ -282,19 +292,19 @@ export const pollRepo = async () => {
 
 export const pollStash = async () => {
   try {
-    const data = await requestAPI<any>("data-collection");
+    const data = await requestAPI<any>('data-collection');
     stashInfo.dataAvailable = data.stash.length > 0;
     let e = document.getElementById(
-      "webds-launcher-card-Data-Collection-red-dot"
+      'webds-launcher-card-Data-Collection-red-dot'
     );
     if (e && testrailOnline) {
-      e.style.display = stashInfo.dataAvailable ? "block" : "none";
+      e.style.display = stashInfo.dataAvailable ? 'block' : 'none';
     }
     e = document.getElementById(
-      "webds-launcher-card-Data-Collection-fav-red-dot"
+      'webds-launcher-card-Data-Collection-fav-red-dot'
     );
     if (e && testrailOnline) {
-      e.style.display = stashInfo.dataAvailable ? "block" : "none";
+      e.style.display = stashInfo.dataAvailable ? 'block' : 'none';
     }
   } catch (error) {
     console.error(`Error - GET /webds/data-collection\n${error}`);
@@ -305,37 +315,38 @@ export const pollStash = async () => {
 
 export const updateDSDKInfo = async () => {
   try {
-    const data = await requestAPI<any>("about?query=os-info");
-    osInfo.current.version = data["VERSION_ID"].replace(/\"/g, "");
+    const data = await requestAPI<any>('about?query=os-info');
+    osInfo.current.version = data['VERSION_ID'].replace(/\"/g, '');
   } catch (error) {
     console.error(`Error - GET /webds/about?query=os-info\n${error}`);
-    return Promise.reject(error);
   }
+
   try {
-    cpuInfo = await requestAPI<any>("about?query=cpu-info");
+    cpuInfo = await requestAPI<any>('about?query=cpu-info');
   } catch (error) {
     console.error(`Error - GET /webds/about?query=cpu-info\n${error}`);
-    return Promise.reject(error);
   }
+
   try {
-    const data = await requestAPI<any>("data-collection");
+    const data = await requestAPI<any>('data-collection');
     stashInfo = { dataAvailable: data.stash.length > 0 };
   } catch (error) {
     console.error(`Error - GET /webds/data-collection\n${error}`);
-    return Promise.reject(error);
   }
+
   try {
     const request = new Request(testrailURL, {
-      method: "GET",
-      mode: "cors",
+      method: 'GET',
+      mode: 'cors',
       headers: new Headers(),
-      referrerPolicy: "no-referrer"
+      referrerPolicy: 'no-referrer'
     });
     await fetch(request);
     testrailOnline = true;
   } catch {
     testrailOnline = false;
   }
+
   return Promise.resolve();
 };
 
@@ -352,9 +363,41 @@ export const getStashInfo = (): StashInfo => {
 };
 
 export const isExternal = (): boolean => {
-  return osInfo.current.version.endsWith("E");
+  return osInfo.current.version.endsWith('E');
 };
 
 export const isTestRailOnline = (): boolean => {
   return testrailOnline;
+};
+
+const updateWebDSSettings = async (setting: string, value: any) => {
+  webdsSettings[setting as keyof WebDSSettings] = value;
+  if (stateDB) {
+    try {
+      await stateDB.save(SETTINGS_DB_NAME, webdsSettings as any);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+};
+
+export const initializeWebDSSettings = async () => {
+  if (stateDB) {
+    try {
+      const settings = await stateDB.fetch(SETTINGS_DB_NAME);
+      if (settings !== undefined) {
+        webdsSettings = { ...(settings as any) };
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+};
+
+export const getRenderRate = (): number | undefined => {
+  return webdsSettings.renderRate;
+};
+
+export const setRenderRate = async (rate: number) => {
+  await updateWebDSSettings('renderRate', rate);
 };

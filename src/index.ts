@@ -1,46 +1,42 @@
 import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
-} from "@jupyterlab/application";
-
-import { IMainMenu } from "@jupyterlab/mainmenu";
-
-import { IStateDB } from "@jupyterlab/statedb";
-
-import { Token } from "@lumino/coreutils";
+} from '@jupyterlab/application';
+import { IMainMenu } from '@jupyterlab/mainmenu';
+import { IStateDB } from '@jupyterlab/statedb';
+import { Token } from '@lumino/coreutils';
 
 import {
   addGuidedTuningUsage,
   addStaticConfigUsage,
   initializeStatistics
-} from "./analytics/utils";
-
-import { addMenu } from "./main_menu/utils";
-
+} from './analytics/utils';
+import { addMenu } from './main_menu/utils';
 import {
   addApplicationHex,
   addApplicationIHex,
   addApplicationImg,
+  addPackratFiles,
   addPrivateConfig,
   addPublicConfig,
-  addPackratFiles,
   getCfgFile
-} from "./packrat/utils";
-
+} from './packrat/utils';
 import {
   CPUInfo,
   getCPUInfo,
   getOSInfo,
+  getRenderRate,
   getStashInfo,
+  initializeWebDSSettings,
   isExternal,
   isTestRailOnline,
   OSInfo,
   pollRepo,
   pollStash,
+  setRenderRate,
   StashInfo,
   updateDSDKInfo
-} from "./pinormos/utils";
-
+} from './pinormos/utils';
 import {
   getPackratID,
   getPartNumber,
@@ -48,8 +44,7 @@ import {
   readStaticConfig,
   writeDynamicConfig,
   writeStaticConfig
-} from "./touchcomm/utils";
-
+} from './touchcomm/utils';
 import {
   getJupyterFontColor,
   getWebDSLauncher,
@@ -57,18 +52,16 @@ import {
   getWebDSTheme,
   setWebDSLauncher,
   setWebDSLauncherModel
-} from "./ui/utils";
+} from './ui/utils';
 
-export { CPUInfo, OSInfo, StashInfo } from "./pinormos/utils";
-
+export { CPUInfo, OSInfo, StashInfo } from './pinormos/utils';
 export {
   TouchcommADCReport,
   TouchcommPositionData,
   TouchcommTouchReport,
   TouchcommTraceReport
-} from "./touchcomm/utils";
-
-export { WebDSWidget } from "./widgets/utils";
+} from './touchcomm/utils';
+export { WebDSWidget } from './widgets/utils';
 
 export let stateDB: IStateDB | null = null;
 
@@ -101,6 +94,10 @@ export type WebDSService = {
     getStashInfo: () => StashInfo;
     isExternal: () => boolean;
     isTestRailOnline: () => boolean;
+    settings: {
+      getRenderRate: () => number | undefined;
+      setRenderRate: (rate: number) => void;
+    };
   };
   touchcomm: {
     getPackratID: () => Promise<number>;
@@ -121,14 +118,14 @@ export type WebDSService = {
 };
 
 export const WebDSService = new Token<WebDSService>(
-  "@webds/service:WebDSService"
+  '@webds/service:WebDSService'
 );
 
 /**
  * Initialization data for the @webds/service extension.
  */
 const plugin: JupyterFrontEndPlugin<WebDSService> = {
-  id: "@webds/service:plugin",
+  id: '@webds/service:plugin',
   autoStart: true,
   optional: [IStateDB],
   requires: [IMainMenu],
@@ -138,7 +135,9 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
     mainMenu: IMainMenu,
     state: IStateDB | null
   ): Promise<WebDSService> => {
-    console.log("JupyterLab extension @webds/service is activated!");
+    console.log('JupyterLab extension @webds/service is activated!');
+
+    stateDB = state;
 
     const initializedPromise = updateDSDKInfo();
 
@@ -148,10 +147,11 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
     pollStash();
     addMenu(app, mainMenu);
     if (state) {
+      initializeWebDSSettings();
       initializeStatistics();
     }
 
-    console.log("JupyterLab extension @webds/service is initialized!");
+    console.log('JupyterLab extension @webds/service is initialized!');
 
     return {
       analytics: {
@@ -159,7 +159,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         addStaticConfigUsage
       },
       greeting() {
-        console.log("Hello! This is WebDS Service. How may I help you?");
+        console.log('Hello! This is WebDS Service. How may I help you?');
       },
       initialized: initializedPromise,
       packrat: {
@@ -180,7 +180,11 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         getOSInfo,
         getStashInfo,
         isExternal,
-        isTestRailOnline
+        isTestRailOnline,
+        settings: {
+          getRenderRate,
+          setRenderRate
+        }
       },
       touchcomm: {
         getPackratID,

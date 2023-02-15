@@ -71,7 +71,6 @@ export type WebDSService = {
     addStaticConfigUsage: (configName: string, target: string) => void;
   };
   greeting: () => void;
-  initialized: Promise<void>;
   packrat: {
     cache: {
       addApplicationHex: (packratID?: number | undefined) => Promise<string>;
@@ -139,9 +138,13 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
 
     stateDB = state;
 
-    const initializedPromise = updateDSDKInfo();
+    await updateDSDKInfo();
 
-    await initializedPromise;
+    if (isExternal()) {
+      await addPublicConfig();
+    } else {
+      await addPrivateConfig();
+    }
 
     pollRepo();
     pollStash();
@@ -161,7 +164,6 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       greeting() {
         console.log('Hello! This is WebDS Service. How may I help you?');
       },
-      initialized: initializedPromise,
       packrat: {
         cache: {
           addApplicationHex,

@@ -39,7 +39,7 @@ const _addPackratFile = async (
     }
   }
 
-  if (startsWith === 'fw' && endsWith === 'ihex.hex') {
+  if ((startsWith === 'sb' || startsWith === 'fw') && endsWith === 'ihex.hex') {
     fileName || (fileName = 'PR' + packratID + '.' + 'sb' + '.' + endsWith);
   } else {
     fileName || (fileName = 'PR' + packratID + '.' + endsWith);
@@ -104,6 +104,14 @@ export const addApplicationHex = (packratID?: number): Promise<string> => {
 export const addApplicationIHex = async (
   packratID?: number
 ): Promise<string> => {
+  try {
+    const smartBridge = await _addPackratFile(packratID, undefined, {
+      startsWith: 'sb',
+      endsWith: 'ihex.hex'
+    });
+    return smartBridge;
+  } catch {}
+
   try {
     const smartBridge = await _addPackratFile(packratID, undefined, {
       startsWith: 'fw',

@@ -140,11 +140,13 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
 
     await updateDSDKInfo();
 
-    if (isExternal()) {
-      await addPublicConfig();
-    } else {
-      await addPrivateConfig();
-    }
+    try {
+      if (isExternal()) {
+        await addPublicConfig();
+      } else {
+        await addPrivateConfig();
+      }
+    } catch {}
 
     pollRepo();
     pollStash();

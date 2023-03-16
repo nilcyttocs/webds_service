@@ -315,6 +315,12 @@ export const pollStash = async () => {
 
 export const updateDSDKInfo = async () => {
   try {
+    await requestAPI<any>('general');
+  } catch (error) {
+    console.error(`Error - GET /webds/general\n${error}`);
+  }
+
+  try {
     const data = await requestAPI<any>('about?query=os-info');
     osInfo.current.version = data['VERSION_ID'].replace(/\"/g, '');
   } catch (error) {

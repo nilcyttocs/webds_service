@@ -326,7 +326,9 @@ export const updateDSDKInfo = async () => {
   try {
     const data = await requestAPI<any>('about?query=os-info');
     osInfo.current.version = data['VERSION_ID'].replace(/\"/g, '');
-    osInfo.current.versionNum = Number(osInfo.current.version.replace('.', ''));
+    osInfo.current.versionNum = Number(
+      osInfo.current.version.replace('.', '').replace('E', '')
+    );
   } catch (error) {
     console.error(`Error - GET /webds/about?query=os-info\n${error}`);
   }

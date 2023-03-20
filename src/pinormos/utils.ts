@@ -5,9 +5,11 @@ import { focusTracker } from '../widgets/utils';
 export interface OSInfo {
   current: {
     version: string;
+    versionNum: number;
   };
   repo: {
     version: string;
+    versionNum: number;
     tarballUrl: string;
     tarballName: string;
     manifestUrl: string;
@@ -70,10 +72,12 @@ const streamingWidgets = [
 
 const osInfo: OSInfo = {
   current: {
-    version: ''
+    version: '',
+    versionNum: 0
   },
   repo: {
     version: '',
+    versionNum: 0,
     tarballUrl: '',
     tarballName: '',
     manifestUrl: '',
@@ -177,6 +181,7 @@ const checkRepo = async () => {
     const path = data.items[index].path;
     const version = path.match(/pinormos-.+?(?=-)/g)![0].split('-')[1];
     osInfo.repo.version = version;
+    osInfo.repo.versionNum = Number(version.replace('.', ''));
     osInfo.repo.tarballUrl = data.items[index].downloadUrl;
     osInfo.repo.manifestUrl = data.items[index + 1].downloadUrl;
     osInfo.repo.tarballName = data.items[index].path.match(/[^/]*$/)[0];
@@ -255,9 +260,7 @@ export const pollRepo = async () => {
     console.error(error);
   }
 
-  if (
-    osInfo.repo.version.toLowerCase() > osInfo.current.version.toLowerCase()
-  ) {
+  if (osInfo.repo.versionNum > osInfo.current.versionNum) {
     try {
       await checkDropbox();
       if (osInfo.repo.downloaded === true) {
@@ -323,6 +326,7 @@ export const updateDSDKInfo = async () => {
   try {
     const data = await requestAPI<any>('about?query=os-info');
     osInfo.current.version = data['VERSION_ID'].replace(/\"/g, '');
+    osInfo.current.versionNum = Number(osInfo.current.version.replace('.', ''));
   } catch (error) {
     console.error(`Error - GET /webds/about?query=os-info\n${error}`);
   }

@@ -1,4 +1,5 @@
 import green from '@mui/material/colors/green';
+import grey from '@mui/material/colors/grey';
 import orange from '@mui/material/colors/orange';
 import red from '@mui/material/colors/red';
 
@@ -13,6 +14,7 @@ const webdsTheme = (mode: string) => ({
     divider:
       mode === 'light' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)',
     custom: {
+      disabled: grey['A200'],
       fail: red['A700'],
       pass: green['A400'],
       progress: orange[400]

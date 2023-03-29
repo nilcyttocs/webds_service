@@ -39,11 +39,7 @@ const _addPackratFile = async (
     }
   }
 
-  if ((startsWith === 'sb' || startsWith === 'fw') && endsWith === 'ihex.hex') {
-    fileName || (fileName = 'PR' + packratID + '.' + 'sb' + '.' + endsWith);
-  } else {
-    fileName || (fileName = 'PR' + packratID + '.' + endsWith);
-  }
+  fileName || (fileName = 'PR' + packratID + '.' + endsWith);
   console.log(fileName);
 
   try {

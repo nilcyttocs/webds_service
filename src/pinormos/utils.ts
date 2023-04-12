@@ -260,17 +260,15 @@ export const pollRepo = async () => {
     console.error(error);
   }
 
-  if (osInfo.repo.versionNum > osInfo.current.versionNum) {
+  if (
+    osInfo.repo.versionNum > osInfo.current.versionNum &&
+    !osInfo.repo.downloaded
+  ) {
     try {
       await checkDropbox();
-      if (osInfo.repo.downloaded === true) {
-        return;
+      if (osInfo.repo.downloaded === false) {
+        await downloadTarball();
       }
-    } catch (error) {
-      console.error(error);
-    }
-    try {
-      await downloadTarball();
       osInfo.repo.downloaded = true;
       let e = document.getElementById(
         'webds-launcher-card-DSDK-Update-red-dot'
@@ -284,7 +282,6 @@ export const pollRepo = async () => {
       if (e) {
         e.style.display = 'block';
       }
-      return;
     } catch (error) {
       console.error(error);
     }

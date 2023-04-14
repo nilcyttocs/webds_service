@@ -117,7 +117,7 @@ const _findEntry = (root: any, path: string[], entry: string): boolean => {
   return _findObject(array, { name: entry }) !== undefined;
 };
 
-const checkDropbox = async () => {
+export const checkDropbox = async (): Promise<boolean> => {
   try {
     const dropboxDir = await requestAPI<any>(
       'filesystem?dir=' + dropboxcEndpoint
@@ -129,11 +129,67 @@ const checkDropbox = async () => {
     ) {
       osInfo.repo.downloaded = true;
     }
+    return osInfo.repo.downloaded;
   } catch (error) {
     console.error(
       `Error - GET /webds/filesystem?dir=${dropboxcEndpoint}\n${error}`
     );
     return Promise.reject('Failed to check for presence of tarball in dropbox');
+  }
+};
+
+export const downloadTarball = async () => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set('Content-Type', 'application/x-tgz');
+
+  console.log(`Downloading tarball from ${osInfo.repo.tarballUrl}`);
+  let request = new Request(osInfo.repo.tarballUrl, {
+    method: 'GET',
+    mode: 'cors',
+    headers: requestHeaders,
+    referrerPolicy: 'no-referrer'
+  });
+  let response: Response;
+  try {
+    response = await fetch(request);
+  } catch (error) {
+    console.error(`Error - GET ${osInfo.repo.tarballUrl}\n${error}`);
+    return Promise.reject('Failed to download tarball');
+  }
+  const tarballBlob = await response.blob();
+  const tarballFile = new File([tarballBlob], osInfo.repo.tarballName);
+  console.log(tarballFile);
+
+  console.log(`Downloading manifest from ${osInfo.repo.manifestUrl}`);
+  request = new Request(osInfo.repo.manifestUrl, {
+    method: 'GET',
+    mode: 'cors',
+    headers: requestHeaders,
+    referrerPolicy: 'no-referrer'
+  });
+  try {
+    response = await fetch(request);
+  } catch (error) {
+    console.error(`Error - GET ${osInfo.repo.manifestUrl}\n${error}`);
+    return Promise.reject('Failed to download manifest');
+  }
+  const manifestBlob = await response.blob();
+  const manifestFile = new File([manifestBlob], osInfo.repo.manifestName);
+  console.log(manifestFile);
+
+  console.log('Uploading tarball and manifest to dropbox');
+  const formData = new FormData();
+  formData.append('files', tarballFile);
+  formData.append('files', manifestFile);
+  formData.append('location', dropboxLocation);
+  try {
+    await requestAPI<any>('filesystem', {
+      body: formData,
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error(`Error - POST /webds/filesystem\n${error}`);
+    return Promise.reject('Failed to upload tarball files to dropbox');
   }
 };
 
@@ -191,61 +247,6 @@ const checkRepo = async () => {
   }
 };
 
-const downloadTarball = async () => {
-  const requestHeaders: HeadersInit = new Headers();
-  requestHeaders.set('Content-Type', 'application/x-tgz');
-
-  console.log(`Downloading tarball from ${osInfo.repo.tarballUrl}`);
-  let request = new Request(osInfo.repo.tarballUrl, {
-    method: 'GET',
-    mode: 'cors',
-    headers: requestHeaders,
-    referrerPolicy: 'no-referrer'
-  });
-  let response: Response;
-  try {
-    response = await fetch(request);
-  } catch (error) {
-    console.error(`Error - GET ${osInfo.repo.tarballUrl}\n${error}`);
-    return Promise.reject('Failed to download tarball');
-  }
-  const tarballBlob = await response.blob();
-  const tarballFile = new File([tarballBlob], osInfo.repo.tarballName);
-  console.log(tarballFile);
-
-  console.log(`Downloading manifest from ${osInfo.repo.manifestUrl}`);
-  request = new Request(osInfo.repo.manifestUrl, {
-    method: 'GET',
-    mode: 'cors',
-    headers: requestHeaders,
-    referrerPolicy: 'no-referrer'
-  });
-  try {
-    response = await fetch(request);
-  } catch (error) {
-    console.error(`Error - GET ${osInfo.repo.manifestUrl}\n${error}`);
-    return Promise.reject('Failed to download manifest');
-  }
-  const manifestBlob = await response.blob();
-  const manifestFile = new File([manifestBlob], osInfo.repo.manifestName);
-  console.log(manifestFile);
-
-  console.log('Uploading tarball and manifest to dropbox');
-  const formData = new FormData();
-  formData.append('files', tarballFile);
-  formData.append('files', manifestFile);
-  formData.append('location', dropboxLocation);
-  try {
-    await requestAPI<any>('filesystem', {
-      body: formData,
-      method: 'POST'
-    });
-  } catch (error) {
-    console.error(`Error - POST /webds/filesystem\n${error}`);
-    return Promise.reject('Failed to upload tarball files to dropbox');
-  }
-};
-
 export const pollRepo = async () => {
   if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
     if (streamingWidgets.includes(focusTracker.currentWidget.id)) {
@@ -256,20 +257,7 @@ export const pollRepo = async () => {
 
   try {
     await checkRepo();
-  } catch (error) {
-    console.error(error);
-  }
-
-  if (
-    osInfo.repo.versionNum > osInfo.current.versionNum &&
-    !osInfo.repo.downloaded
-  ) {
-    try {
-      await checkDropbox();
-      if (osInfo.repo.downloaded === false) {
-        await downloadTarball();
-      }
-      osInfo.repo.downloaded = true;
+    if (osInfo.repo.versionNum > osInfo.current.versionNum) {
       let e = document.getElementById(
         'webds-launcher-card-DSDK-Update-red-dot'
       );
@@ -282,9 +270,9 @@ export const pollRepo = async () => {
       if (e) {
         e.style.display = 'block';
       }
-    } catch (error) {
-      console.error(error);
     }
+  } catch (error) {
+    console.error(error);
   }
 
   setTimeout(pollRepo, pollRepoPeriod);

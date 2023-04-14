@@ -23,6 +23,10 @@ import {
 } from './packrat/utils';
 import {
   CPUInfo,
+  OSInfo,
+  StashInfo,
+  checkDropbox,
+  downloadTarball,
   getCPUInfo,
   getOSInfo,
   getRenderRate,
@@ -30,11 +34,9 @@ import {
   initializeWebDSSettings,
   isExternal,
   isTestRailOnline,
-  OSInfo,
   pollRepo,
   pollStash,
   setRenderRate,
-  StashInfo,
   updateDSDKInfo
 } from './pinormos/utils';
 import {
@@ -88,6 +90,8 @@ export type WebDSService = {
     };
   };
   pinormos: {
+    checkDropbox: () => Promise<boolean>;
+    downloadTarball: () => Promise<void>;
     getCPUInfo: () => CPUInfo;
     getOSInfo: () => OSInfo;
     getStashInfo: () => StashInfo;
@@ -180,6 +184,8 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         }
       },
       pinormos: {
+        checkDropbox,
+        downloadTarball,
         getCPUInfo,
         getOSInfo,
         getStashInfo,

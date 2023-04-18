@@ -23,11 +23,14 @@ import {
 } from './packrat/utils';
 import {
   CPUInfo,
+  ConnectionInfo,
   OSInfo,
   StashInfo,
+  checkConnection,
   checkDropbox,
   downloadTarball,
   getCPUInfo,
+  getConnectionInfo,
   getOSInfo,
   getRenderRate,
   getStashInfo,
@@ -56,7 +59,7 @@ import {
   setWebDSLauncherModel
 } from './ui/utils';
 
-export { CPUInfo, OSInfo, StashInfo } from './pinormos/utils';
+export { CPUInfo, ConnectionInfo, OSInfo, StashInfo } from './pinormos/utils';
 export {
   TouchcommADCReport,
   TouchcommPositionData,
@@ -90,8 +93,10 @@ export type WebDSService = {
     };
   };
   pinormos: {
+    checkConnection: () => Promise<void>;
     checkDropbox: () => Promise<boolean>;
     downloadTarball: () => Promise<void>;
+    getConnectionInfo: () => ConnectionInfo;
     getCPUInfo: () => CPUInfo;
     getOSInfo: () => OSInfo;
     getStashInfo: () => StashInfo;
@@ -184,8 +189,10 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         }
       },
       pinormos: {
+        checkConnection,
         checkDropbox,
         downloadTarball,
+        getConnectionInfo,
         getCPUInfo,
         getOSInfo,
         getStashInfo,

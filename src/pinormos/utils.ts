@@ -44,6 +44,12 @@ export interface StashInfo {
   dataAvailable: boolean;
 }
 
+export interface ConnectionInfo {
+  interface: string | undefined;
+  i2cAddr: number | undefined;
+  spiMode: number | undefined;
+}
+
 export interface WebDSSettings {
   renderRate: number | undefined;
 }
@@ -89,6 +95,12 @@ const osInfo: OSInfo = {
 let cpuInfo: CPUInfo;
 
 let stashInfo: StashInfo;
+
+const connectionInfo: ConnectionInfo = {
+  interface: undefined,
+  i2cAddr: undefined,
+  spiMode: undefined
+};
 
 let testrailOnline: boolean;
 
@@ -301,6 +313,19 @@ export const pollStash = async () => {
   setTimeout(pollStash, pollStashPeriod);
 };
 
+export const checkConnection = async () => {
+  try {
+    const data = await requestAPI<any>('settings/connection?query=comm');
+    connectionInfo.interface = data.interface;
+    connectionInfo.i2cAddr = data.i2cAddr;
+    connectionInfo.spiMode = data.spiMode;
+  } catch (error) {
+    console.error(
+      `Error - GET /webds/settings/connection?query=comm\n${error}`
+    );
+  }
+};
+
 export const updateDSDKInfo = async () => {
   try {
     await requestAPI<any>('general');
@@ -344,6 +369,8 @@ export const updateDSDKInfo = async () => {
     testrailOnline = false;
   }
 
+  await checkConnection();
+
   return Promise.resolve();
 };
 
@@ -357,6 +384,10 @@ export const getCPUInfo = (): CPUInfo => {
 
 export const getStashInfo = (): StashInfo => {
   return stashInfo;
+};
+
+export const getConnectionInfo = (): ConnectionInfo => {
+  return connectionInfo;
 };
 
 export const isExternal = (): boolean => {

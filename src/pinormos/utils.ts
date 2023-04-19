@@ -323,6 +323,7 @@ export const checkConnection = async () => {
     console.error(
       `Error - GET /webds/settings/connection?query=comm\n${error}`
     );
+    connectionInfo.interface = undefined;
   }
 };
 

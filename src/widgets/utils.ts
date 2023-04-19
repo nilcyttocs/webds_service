@@ -3,6 +3,7 @@ import { Message } from '@lumino/messaging';
 import { FocusTracker } from '@lumino/widgets';
 
 import { addExtensionUsage } from '../analytics/utils';
+import { checkConnection } from '../pinormos/utils';
 
 export const focusTracker: FocusTracker<WebDSWidget> = new FocusTracker();
 
@@ -141,6 +142,7 @@ export class WebDSWidget<
   protected onAfterAttach(msg: Message) {
     super.onAfterAttach(msg);
     this._addUsage();
+    checkConnection();
   }
 
   protected onActivateRequest(msg: Message) {

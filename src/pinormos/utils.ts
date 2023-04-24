@@ -249,7 +249,12 @@ const checkRepo = async () => {
     const path = data.items[index].path;
     const version = path.match(/pinormos-.+?(?=-)/g)![0].split('-')[1];
     osInfo.repo.version = version;
-    osInfo.repo.versionNum = Number(version.replace('.', ''));
+    osInfo.repo.versionNum = Number(
+      version
+        .split('.')
+        .map((v: string) => v.padStart(2, '0'))
+        .join('')
+    );
     osInfo.repo.tarballUrl = data.items[index].downloadUrl;
     osInfo.repo.manifestUrl = data.items[index + 1].downloadUrl;
     osInfo.repo.tarballName = data.items[index].path.match(/[^/]*$/)[0];

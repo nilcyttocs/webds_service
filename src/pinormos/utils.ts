@@ -60,8 +60,15 @@ const dropboxLocation = '/var/spool/syna/softwareupdater';
 
 const dropboxcEndpoint = '%2Fvar%2Fspool%2Fsyna%2Fsoftwareupdater';
 
-const repoListURL =
-  'http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&sort=name&direction=desc';
+const repoInfoURL =
+  'http://nexus.synaptics.com:8081/repository/PinormOS/PinormOS/DSDK/Release/Info.json';
+
+const repoTarballURL =
+  'http://nexus.synaptics.com:8081/service/rest/v1/search/assets?repository=PinormOS&q="PinormOS/DSDK/Release/';
+
+const repoTarballInternalSuffix = '/Internal/tarball"';
+
+const repoTarballExternalSuffix = '/External/tarball"';
 
 const testrailURL = 'http://nexus.synaptics.com:8083/TestRail/get_projects';
 
@@ -209,7 +216,7 @@ const checkRepo = async () => {
   const requestHeaders: HeadersInit = new Headers();
   requestHeaders.set('Content-Type', 'application/json');
 
-  const request = new Request(repoListURL, {
+  let request = new Request(repoInfoURL, {
     method: 'GET',
     mode: 'cors',
     headers: requestHeaders,
@@ -220,34 +227,57 @@ const checkRepo = async () => {
   try {
     response = await fetch(request);
   } catch (error) {
-    console.error(`Error - GET ${repoListURL}\n${error}`);
-    return Promise.reject('Failed to retrieve tarball repo listing');
+    console.error(`Error - GET ${repoInfoURL}\n${error}`);
+    return Promise.reject('Failed to retrieve repo info');
   }
 
+  let version: string;
   let data: any = await response.text();
+  if (data.length > 0) {
+    try {
+      data = JSON.parse(data);
+      version = data.latest.version;
+    } catch {
+      return Promise.reject('Invalid data content in repo info response body');
+    }
+  } else {
+    return Promise.reject('No data content in repo info response body');
+  }
+
+  if (version === undefined) {
+    return Promise.reject('No valid version in repo info response body');
+  }
+
+  const tarballURL = repoTarballURL.concat(
+    version,
+    osInfo.current.version.endsWith('E')
+      ? repoTarballExternalSuffix
+      : repoTarballInternalSuffix
+  );
+
+  request = new Request(tarballURL, {
+    method: 'GET',
+    mode: 'cors',
+    headers: requestHeaders,
+    referrerPolicy: 'no-referrer'
+  });
+
+  try {
+    response = await fetch(request);
+  } catch (error) {
+    console.error(`Error - GET ${tarballURL}\n${error}`);
+    return Promise.reject('Failed to retrieve tarball listing');
+  }
+
+  data = await response.text();
   if (data.length > 0) {
     try {
       data = JSON.parse(data);
     } catch {
       return Promise.reject(
-        'Invalid data content in tarball repo response body'
+        'Invalid data content in tarball listing response body'
       );
     }
-    let index: number;
-    if (osInfo.current.version.endsWith('E')) {
-      index = data.items.findIndex((item: any) => {
-        return item.path.includes('External/tarball');
-      });
-    } else {
-      index = data.items.findIndex((item: any) => {
-        return item.path.includes('Internal/tarball');
-      });
-    }
-    if (index === -1) {
-      return;
-    }
-    const path = data.items[index].path;
-    const version = path.match(/pinormos-.+?(?=-)/g)![0].split('-')[1];
     osInfo.repo.version = version;
     osInfo.repo.versionNum = Number(
       version
@@ -255,10 +285,10 @@ const checkRepo = async () => {
         .map((v: string) => v.padStart(2, '0'))
         .join('')
     );
-    osInfo.repo.tarballUrl = data.items[index].downloadUrl;
-    osInfo.repo.manifestUrl = data.items[index + 1].downloadUrl;
-    osInfo.repo.tarballName = data.items[index].path.match(/[^/]*$/)[0];
-    osInfo.repo.manifestName = data.items[index + 1].path.match(/[^/]*$/)[0];
+    osInfo.repo.tarballUrl = data.items[0].downloadUrl;
+    osInfo.repo.tarballName = data.items[0].path.match(/[^/]*$/)[0];
+    osInfo.repo.manifestUrl = data.items[1].downloadUrl;
+    osInfo.repo.manifestName = data.items[1].path.match(/[^/]*$/)[0];
   } else {
     return Promise.reject('No data content in tarball repo response body');
   }
@@ -343,7 +373,11 @@ export const updateDSDKInfo = async () => {
     const data = await requestAPI<any>('about?query=os-info');
     osInfo.current.version = data['VERSION_ID'].replace(/\"/g, '');
     osInfo.current.versionNum = Number(
-      osInfo.current.version.replace('.', '').replace('E', '')
+      osInfo.current.version
+        .replace('E', '')
+        .split('.')
+        .map((v: string) => v.padStart(2, '0'))
+        .join('')
     );
   } catch (error) {
     console.error(`Error - GET /webds/about?query=os-info\n${error}`);

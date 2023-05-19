@@ -20,7 +20,7 @@ const basicTouchAssessmentWidgets = [
 ];
 
 export const widgetSets = {
-  'S3908,S3910,S3913,S3920': [
+  'S3908,S3910,S3913,S3916,S3920': [
     ...basicCommonWidgets,
     ...basicTouchAssessmentWidgets,
     'Configuration Editor',

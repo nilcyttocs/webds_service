@@ -50,7 +50,6 @@ const getIdentify = async (): Promise<any> => {
 export const getPackratID = async (): Promise<number> => {
   try {
     const identify = await getIdentify();
-    console.log('Packrat ID = ' + identify.buildID);
     return identify.buildID;
   } catch (error) {
     console.error(error);
@@ -61,8 +60,25 @@ export const getPackratID = async (): Promise<number> => {
 export const getPartNumber = async (): Promise<string> => {
   try {
     const identify = await getIdentify();
-    const partNumber = identify.partNumber.toUpperCase().replace(/\0/g, '');
-    console.log(`Part Number = ${partNumber}`);
+    let partNumber = identify.partNumber
+      .toUpperCase()
+      .replace(/\0/g, '')
+      .replace(/ /g, '-');
+    const pnParts = partNumber.split(':');
+    if (pnParts.length === 2) {
+      partNumber = pnParts[0] + '-';
+      let utf8 = decodeURI(encodeURIComponent(pnParts[1]));
+      for (let i = 0; i < utf8.length; i++) {
+        if (i >= 2) {
+          break;
+        }
+        if (i !== 0) {
+          partNumber = partNumber + '.';
+        }
+        partNumber = partNumber + utf8.charCodeAt(i).toString();
+      }
+    }
+    partNumber = partNumber.replace(/([A-Z])([A-Z])/g, '$1-$2');
     return partNumber;
   } catch (error) {
     console.error(error);

@@ -43,3 +43,13 @@ export const getWebDSLauncherModel = (): any => {
 export const setWebDSLauncherModel = (launcherModel: any) => {
   webdsLauncherModel = launcherModel;
 };
+
+let webdsConfigLauncher: any;
+
+export const getWebDSConfigLauncher = (): any => {
+  return webdsConfigLauncher;
+};
+
+export const setWebDSConfigLauncher = (launcher: any) => {
+  webdsConfigLauncher = launcher;
+};

@@ -1,6 +1,11 @@
+import { KernelAPI } from '@jupyterlab/services';
+
 import { requestAPI } from '../handler';
 import { stateDB } from '../index';
+import { getPartNumber } from '../touchcomm/utils';
+import { getWebDSConfigLauncher, getWebDSLauncher } from '../ui/utils';
 import { focusTracker } from '../widgets/utils';
+import { widgetSets } from './configuration';
 
 export interface OSInfo {
   current: {
@@ -48,6 +53,7 @@ export interface ConnectionInfo {
   interface: string | undefined;
   i2cAddr: number | undefined;
   spiMode: number | undefined;
+  partNumber: string | undefined;
 }
 
 export interface WebDSSettings {
@@ -76,10 +82,12 @@ const pollRepoPeriod = 2 * 60 * 1000;
 
 const pollStashPeriod = 2 * 1000;
 
+const pollConnectionPeriod = 1 * 1000;
+
 const streamingWidgets = [
-  'webds_data_collection',
+  'webds_data_collection_widget',
   'webds_heatmap_widget',
-  'webds_integration_duration',
+  'webds_integration_duration_widget',
   'webds_touch_widget'
 ];
 
@@ -99,6 +107,8 @@ const osInfo: OSInfo = {
   }
 };
 
+let partNumber: string | undefined;
+
 let cpuInfo: CPUInfo;
 
 let stashInfo: StashInfo;
@@ -106,7 +116,8 @@ let stashInfo: StashInfo;
 const connectionInfo: ConnectionInfo = {
   interface: undefined,
   i2cAddr: undefined,
-  spiMode: undefined
+  spiMode: undefined,
+  partNumber: undefined
 };
 
 let testrailOnline: boolean;
@@ -326,6 +337,13 @@ export const pollRepo = async () => {
 };
 
 export const pollStash = async () => {
+  if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
+    if (streamingWidgets.includes(focusTracker.currentWidget.id)) {
+      setTimeout(pollStash, pollStashPeriod);
+      return;
+    }
+  }
+
   try {
     const data = await requestAPI<any>('data-collection');
     stashInfo.dataAvailable = data.stash.length > 0;
@@ -348,18 +366,70 @@ export const pollStash = async () => {
   setTimeout(pollStash, pollStashPeriod);
 };
 
-export const checkConnection = async () => {
+const isNotebookActive = async () => {
+  try {
+    const kernelList = await KernelAPI.listRunning();
+    for (let i = 0; i < kernelList.length; i++) {
+      const kernel: any = kernelList[i];
+      if (kernel.execution_state === 'busy') {
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error(`Error retrieving kernel information\n${error}`);
+    return false;
+  }
+};
+
+const refreshLauncher = () => {
+  const webdsLauncher = getWebDSLauncher() as any;
+  if (webdsLauncher) {
+    webdsLauncher.update();
+  }
+  const webdsConfigLauncher = getWebDSConfigLauncher() as any;
+  if (webdsConfigLauncher) {
+    webdsConfigLauncher.update();
+  }
+};
+
+export const pollConnection = async () => {
+  if (await isNotebookActive()) {
+    setTimeout(pollConnection, pollConnectionPeriod);
+    return;
+  }
+
+  try {
+    const pn = await getPartNumber();
+    if (pn !== partNumber) {
+      partNumber = pn;
+      refreshLauncher();
+    }
+  } catch (error) {
+    console.error(error);
+    if (partNumber !== undefined) {
+      partNumber = undefined;
+      refreshLauncher();
+    }
+    connectionInfo.interface = undefined;
+    setTimeout(pollConnection, pollConnectionPeriod);
+    return;
+  }
+
   try {
     const data = await requestAPI<any>('settings/connection?query=comm');
     connectionInfo.interface = data.interface;
     connectionInfo.i2cAddr = data.i2cAddr;
     connectionInfo.spiMode = data.spiMode;
+    connectionInfo.partNumber = partNumber.split('-')[0];
   } catch (error) {
     console.error(
       `Error - GET /webds/settings/connection?query=comm\n${error}`
     );
     connectionInfo.interface = undefined;
   }
+
+  setTimeout(pollConnection, pollConnectionPeriod);
 };
 
 export const updateDSDKInfo = async () => {
@@ -409,9 +479,22 @@ export const updateDSDKInfo = async () => {
     testrailOnline = false;
   }
 
-  await checkConnection();
-
   return Promise.resolve();
+};
+
+export const getWidgetSet = (): Set<string> => {
+  if (partNumber === undefined) {
+    return new Set(widgetSets.invalid);
+  }
+  let widgetSet: Set<string> = new Set();
+  for (const [keys, value] of Object.entries(widgetSets)) {
+    keys.split(',').forEach(key => {
+      if (partNumber!.includes(key)) {
+        widgetSet = new Set([...widgetSet, ...value]);
+      }
+    });
+  }
+  return widgetSet;
 };
 
 export const getOSInfo = (): OSInfo => {

@@ -494,7 +494,7 @@ export const getWidgetSet = (): Set<string> => {
       }
     });
   }
-  return widgetSet;
+  return widgetSet.size === 0 ? new Set(widgetSets.invalid) : widgetSet;
 };
 
 export const getOSInfo = (): OSInfo => {

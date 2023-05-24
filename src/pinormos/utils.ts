@@ -399,6 +399,13 @@ export const pollConnection = async () => {
     return;
   }
 
+  if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
+    if (focusTracker.currentWidget.id === 'webds_reprogram_widget') {
+      setTimeout(pollConnection, pollConnectionPeriod);
+      return;
+    }
+  }
+
   try {
     const pn = await getPartNumber();
     if (pn !== partNumber) {

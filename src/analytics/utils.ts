@@ -4,6 +4,8 @@ import { focusTracker } from '../widgets/utils';
 
 const STATISTICS_DB_NAME = '@webds/service:statistics';
 
+const usageDataBaseURL = 'http://nexus.synaptics.com:8085/usage';
+
 type Statistics = {
   dbName: string;
   data: any;
@@ -20,10 +22,11 @@ export const statistics: Statistics = {
 
 export const addExtensionUsage = async (extensionName: string) => {
   if (stateDB && statistics.initialized) {
-    statistics.data[statistics.version].extensions[extensionName] =
-      statistics.data[statistics.version].extensions[extensionName] + 1 || 1;
+    statistics.data.data[statistics.version].extensions[extensionName] =
+      statistics.data.data[statistics.version].extensions[extensionName] + 1 ||
+      1;
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -32,10 +35,11 @@ export const addExtensionUsage = async (extensionName: string) => {
 
 export const addGuidedTuningUsage = async (widgetName: string) => {
   if (stateDB && statistics.initialized) {
-    statistics.data[statistics.version].guidedTuning[widgetName] =
-      statistics.data[statistics.version].guidedTuning[widgetName] + 1 || 1;
+    statistics.data.data[statistics.version].guidedTuning[widgetName] =
+      statistics.data.data[statistics.version].guidedTuning[widgetName] + 1 ||
+      1;
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -47,41 +51,77 @@ export const addStaticConfigUsage = async (
   target: string
 ) => {
   if (stateDB && statistics.initialized) {
-    statistics.data[statistics.version].staticConfig[target][configName] =
-      statistics.data[statistics.version].staticConfig[target][configName] ||
-      {};
-    statistics.data[statistics.version].staticConfig[target][configName].total =
-      statistics.data[statistics.version].staticConfig[target][configName]
+    statistics.data.data[statistics.version].staticConfig[target][configName] =
+      statistics.data.data[statistics.version].staticConfig[target][
+        configName
+      ] || {};
+    statistics.data.data[statistics.version].staticConfig[target][
+      configName
+    ].total =
+      statistics.data.data[statistics.version].staticConfig[target][configName]
         .total + 1 || 1;
     if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
       const label = focusTracker.currentWidget.title.label;
-      statistics.data[statistics.version].staticConfig[target][configName][
+      statistics.data.data[statistics.version].staticConfig[target][configName][
         label
       ] =
-        statistics.data[statistics.version].staticConfig[target][configName][
-          label
-        ] + 1 || 1;
+        statistics.data.data[statistics.version].staticConfig[target][
+          configName
+        ][label] + 1 || 1;
     }
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
   }
 };
 
+export const uploadStatistics = async () => {
+  const requestHeaders: HeadersInit = new Headers();
+  requestHeaders.set('Content-Type', 'application/json');
+
+  const request = new Request(usageDataBaseURL, {
+    method: 'POST',
+    mode: 'cors',
+    headers: requestHeaders,
+    referrerPolicy: 'no-referrer',
+    body: JSON.stringify(statistics.data)
+  });
+
+  try {
+    const response = await fetch(request);
+    console.log(response);
+  } catch (error) {
+    console.error(`Error - POST ${usageDataBaseURL}\n${error}`);
+    return Promise.reject('Failed to upload statistics');
+  }
+};
+
+const resetStatistics = (data: any) => {
+  statistics.version = getOSInfo().current.version;
+  statistics.data = data;
+  statistics.data.uuid = statistics.data.uuid || getCPUInfo().Serial;
+  statistics.data.data = statistics.data.data || {};
+  statistics.data.data[statistics.version] =
+    statistics.data.data[statistics.version] || {};
+  statistics.data.data[statistics.version].extensions =
+    statistics.data.data[statistics.version].extensions || {};
+  statistics.data.data[statistics.version].guidedTuning =
+    statistics.data.data[statistics.version].guidedTuning || {};
+  statistics.data.data[statistics.version].staticConfig =
+    statistics.data.data[statistics.version].staticConfig || {};
+  statistics.data.data[statistics.version].staticConfig.toFlash =
+    statistics.data.data[statistics.version].staticConfig.toFlash || {};
+  statistics.data.data[statistics.version].staticConfig.toRAM =
+    statistics.data.data[statistics.version].staticConfig.toRAM || {};
+};
+
 export const clearStatistics = async () => {
   if (stateDB && statistics.initialized) {
-    statistics.data[statistics.version] = {
-      extensions: {},
-      guidedTuning: {},
-      staticConfig: {
-        toFlash: {},
-        toRAM: {}
-      }
-    };
+    resetStatistics({});
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -94,23 +134,9 @@ export const initializeStatistics = async () => {
     if (data === undefined) {
       data = {};
     }
-    statistics.data = data;
-    statistics.version = getOSInfo().current.version;
-    statistics.data.serial = getCPUInfo().Serial;
-    statistics.data[statistics.version] =
-      statistics.data[statistics.version] || {};
-    statistics.data[statistics.version].extensions =
-      statistics.data[statistics.version].extensions || {};
-    statistics.data[statistics.version].guidedTuning =
-      statistics.data[statistics.version].guidedTuning || {};
-    statistics.data[statistics.version].staticConfig =
-      statistics.data[statistics.version].staticConfig || {};
-    statistics.data[statistics.version].staticConfig.toFlash =
-      statistics.data[statistics.version].staticConfig.toFlash || {};
-    statistics.data[statistics.version].staticConfig.toRAM =
-      statistics.data[statistics.version].staticConfig.toRAM || {};
+    resetStatistics(data);
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
       statistics.initialized = true;
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);

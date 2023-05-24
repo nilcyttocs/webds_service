@@ -3,7 +3,13 @@ import { MainAreaWidget } from '@jupyterlab/apputils';
 import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@lumino/widgets';
 
+import {
+  clearStatistics,
+  statistics,
+  uploadStatistics
+} from '../analytics/utils';
 import { requestAPI } from '../handler';
+import { stateDB } from '../index';
 import { addApplicationImg } from '../packrat/utils';
 import { isExternal } from '../pinormos/utils';
 import { getPackratID } from '../touchcomm/utils';
@@ -13,6 +19,8 @@ namespace Attributes {
   export const title = 'WebDS';
   export const rank = 80;
 }
+
+const showAnalyticsMenu = false;
 
 const saveImageWidgets = [
   'webds_config_editor_widget',
@@ -214,6 +222,78 @@ export const addMenu = (app: JupyterFrontEnd, mainMenu: IMainMenu) => {
       type: 'submenu',
       submenu: logsSubMenu
     });
+
+    const commandClearAnalyticsStats = {
+      label: 'Clear Stats',
+      caption: 'Clear Stats',
+      execute: () => {
+        clearStatistics();
+      }
+    };
+    app.commands.addCommand(
+      'webds_service_analytics_stats:clear',
+      commandClearAnalyticsStats
+    );
+
+    const commandPrintAnalyticsStats = {
+      label: 'Print Stats',
+      caption: 'Print Stats',
+      execute: async () => {
+        if (stateDB && statistics.initialized) {
+          try {
+            console.log(await stateDB.fetch(statistics.dbName));
+          } catch (error) {
+            console.error(error);
+            window.alert('Failed to read stats.');
+          }
+        }
+      }
+    };
+    app.commands.addCommand(
+      'webds_service_analytics_stats:print',
+      commandPrintAnalyticsStats
+    );
+
+    const commandUploadAnalyticsStats = {
+      label: 'Upload Stats',
+      caption: 'Upload Stats',
+      execute: async () => {
+        if (stateDB && statistics.initialized) {
+          try {
+            await uploadStatistics();
+          } catch (error) {
+            console.error(error);
+            window.alert('Failed to upload stats.');
+          }
+        }
+      }
+    };
+    app.commands.addCommand(
+      'webds_service_analytics_stats:upload',
+      commandUploadAnalyticsStats
+    );
+
+    const analyticsSubMenu = new Menu({ commands: app.commands });
+    analyticsSubMenu.title.label = 'Analytics';
+    analyticsSubMenu.addItem({
+      command: 'webds_service_analytics_stats:clear'
+    });
+    analyticsSubMenu.addItem({
+      command: 'webds_service_analytics_stats:print'
+    });
+    analyticsSubMenu.addItem({
+      command: 'webds_service_analytics_stats:upload'
+    });
+
+    if (showAnalyticsMenu) {
+      webdsMenu.addItem({
+        type: 'separator'
+      });
+      webdsMenu.addItem({
+        type: 'submenu',
+        submenu: analyticsSubMenu
+      });
+    }
   }
 
   mainMenu.addMenu(webdsMenu, { rank: Attributes.rank });

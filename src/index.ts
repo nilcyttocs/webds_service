@@ -26,6 +26,7 @@ import {
   ConnectionInfo,
   OSInfo,
   StashInfo,
+  checkConnection,
   checkDropbox,
   downloadTarball,
   getCPUInfo,
@@ -96,6 +97,7 @@ export type WebDSService = {
     };
   };
   pinormos: {
+    checkConnection: () => Promise<void>;
     checkDropbox: () => Promise<boolean>;
     downloadTarball: () => Promise<void>;
     getConnectionInfo: () => ConnectionInfo;
@@ -195,6 +197,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         }
       },
       pinormos: {
+        checkConnection,
         checkDropbox,
         downloadTarball,
         getConnectionInfo,

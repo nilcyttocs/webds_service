@@ -393,19 +393,7 @@ const refreshLauncher = () => {
   }
 };
 
-export const pollConnection = async () => {
-  if (await isNotebookActive()) {
-    setTimeout(pollConnection, pollConnectionPeriod);
-    return;
-  }
-
-  if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
-    if (focusTracker.currentWidget.id === 'webds_reprogram_widget') {
-      setTimeout(pollConnection, pollConnectionPeriod);
-      return;
-    }
-  }
-
+export const checkConnection = async () => {
   try {
     const pn = await getPartNumber();
     if (pn !== partNumber) {
@@ -419,7 +407,6 @@ export const pollConnection = async () => {
       refreshLauncher();
     }
     connectionInfo.interface = undefined;
-    setTimeout(pollConnection, pollConnectionPeriod);
     return;
   }
 
@@ -435,6 +422,22 @@ export const pollConnection = async () => {
     );
     connectionInfo.interface = undefined;
   }
+};
+
+export const pollConnection = async () => {
+  if (await isNotebookActive()) {
+    setTimeout(pollConnection, pollConnectionPeriod);
+    return;
+  }
+
+  if (focusTracker.currentWidget && focusTracker.currentWidget.isVisible) {
+    if (focusTracker.currentWidget.id === 'webds_reprogram_widget') {
+      setTimeout(pollConnection, pollConnectionPeriod);
+      return;
+    }
+  }
+
+  await checkConnection();
 
   setTimeout(pollConnection, pollConnectionPeriod);
 };

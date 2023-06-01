@@ -398,15 +398,14 @@ export const checkConnection = async () => {
     const pn = await getPartNumber();
     if (pn !== partNumber) {
       partNumber = pn;
-      refreshLauncher();
     }
   } catch (error) {
     console.error(error);
     if (partNumber !== undefined) {
       partNumber = undefined;
-      refreshLauncher();
     }
     connectionInfo.interface = undefined;
+    refreshLauncher();
     return;
   }
 
@@ -422,6 +421,8 @@ export const checkConnection = async () => {
     );
     connectionInfo.interface = undefined;
   }
+
+  refreshLauncher();
 };
 
 export const pollConnection = async () => {
@@ -488,6 +489,8 @@ export const updateDSDKInfo = async () => {
   } catch {
     testrailOnline = false;
   }
+
+  await checkConnection();
 
   return Promise.resolve();
 };

@@ -38,7 +38,6 @@ import {
   initializeWebDSSettings,
   isExternal,
   isTestRailOnline,
-  pollConnection,
   pollRepo,
   pollStash,
   setRenderRate,
@@ -54,6 +53,7 @@ import {
 } from './touchcomm/utils';
 import {
   getJupyterFontColor,
+  getJupyterThemeMode,
   getWebDSConfigLauncher,
   getWebDSLauncher,
   getWebDSLauncherModel,
@@ -122,6 +122,7 @@ export type WebDSService = {
   };
   ui: {
     getJupyterFontColor: () => string;
+    getJupyterThemeMode: () => string;
     getWebDSConfigLauncher: () => any;
     getWebDSLauncher: () => any;
     getWebDSLauncherModel: () => any;
@@ -164,7 +165,6 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       }
     } catch {}
 
-    pollConnection();
     pollRepo();
     pollStash();
     addMenu(app, mainMenu);
@@ -222,6 +222,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
       },
       ui: {
         getJupyterFontColor,
+        getJupyterThemeMode,
         getWebDSConfigLauncher,
         getWebDSLauncher,
         getWebDSLauncherModel,

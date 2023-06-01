@@ -9,6 +9,15 @@ export const getJupyterFontColor = (): string => {
     .trim();
 };
 
+export const getJupyterThemeMode = (): string => {
+  return window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue('--jp-layout-color0')
+    .includes('white')
+    ? 'light'
+    : 'dark';
+};
+
 export const getWebDSTheme = ({ inverted = false } = {}): any => {
   let mode: string;
   if (

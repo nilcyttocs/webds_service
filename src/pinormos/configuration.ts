@@ -6,7 +6,6 @@ const basicCommonWidgets = [
   'DSDK Jira',
   'DSDK Update',
   'Erase and Program',
-  'Library',
   'README',
   'TouchComm User Guide'
 ];
@@ -29,10 +28,16 @@ export const widgetSets = {
     'Guided',
     'Hybrid Analog',
     'Integration Duration',
+    'Library',
     'Local CBC and CSat',
     'Reflash',
     'Sensor Mapping'
   ],
-  SB7900: [...basicCommonWidgets, 'Register Map', 'Trace and Log'],
+  SB7900: [
+    ...basicCommonWidgets,
+    'Register Map',
+    'Local Dimming',
+    'Trace and Log'
+  ],
   invalid: [...basicCommonWidgets]
 };

@@ -36,6 +36,7 @@ import {
   getStashInfo,
   getWidgetSet,
   initializeWebDSSettings,
+  isCheckingConnection,
   isExternal,
   isTestRailOnline,
   pollRepo,
@@ -55,10 +56,12 @@ import {
   getJupyterFontColor,
   getJupyterThemeMode,
   getWebDSConfigLauncher,
+  getWebDSDocLauncher,
   getWebDSLauncher,
   getWebDSLauncherModel,
   getWebDSTheme,
   setWebDSConfigLauncher,
+  setWebDSDocLauncher,
   setWebDSLauncher,
   setWebDSLauncherModel
 } from './ui/utils';
@@ -105,6 +108,7 @@ export type WebDSService = {
     getOSInfo: () => OSInfo;
     getStashInfo: () => StashInfo;
     getWidgetSet: () => Set<string>;
+    isCheckingConnection: () => boolean;
     isExternal: () => boolean;
     isTestRailOnline: () => boolean;
     settings: {
@@ -124,10 +128,12 @@ export type WebDSService = {
     getJupyterFontColor: () => string;
     getJupyterThemeMode: () => string;
     getWebDSConfigLauncher: () => any;
+    getWebDSDocLauncher: () => any;
     getWebDSLauncher: () => any;
     getWebDSLauncherModel: () => any;
     getWebDSTheme: (inverted?: any) => any;
     setWebDSConfigLauncher: (launcher: any) => void;
+    setWebDSDocLauncher: (launcher: any) => void;
     setWebDSLauncher: (launcher: any) => void;
     setWebDSLauncherModel: (launcherModel: any) => void;
   };
@@ -205,6 +211,7 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         getOSInfo,
         getStashInfo,
         getWidgetSet,
+        isCheckingConnection,
         isExternal,
         isTestRailOnline,
         settings: {
@@ -224,10 +231,12 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
         getJupyterFontColor,
         getJupyterThemeMode,
         getWebDSConfigLauncher,
+        getWebDSDocLauncher,
         getWebDSLauncher,
         getWebDSLauncherModel,
         getWebDSTheme,
         setWebDSConfigLauncher,
+        setWebDSDocLauncher,
         setWebDSLauncher,
         setWebDSLauncherModel
       }

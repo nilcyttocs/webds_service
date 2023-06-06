@@ -62,3 +62,13 @@ export const getWebDSConfigLauncher = (): any => {
 export const setWebDSConfigLauncher = (launcher: any) => {
   webdsConfigLauncher = launcher;
 };
+
+let webdsDocLauncher: any;
+
+export const getWebDSDocLauncher = (): any => {
+  return webdsDocLauncher;
+};
+
+export const setWebDSDocLauncher = (launcher: any) => {
+  webdsDocLauncher = launcher;
+};

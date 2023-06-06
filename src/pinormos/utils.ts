@@ -3,7 +3,11 @@ import { KernelAPI } from '@jupyterlab/services';
 import { requestAPI } from '../handler';
 import { stateDB } from '../index';
 import { getPartNumber } from '../touchcomm/utils';
-import { getWebDSConfigLauncher, getWebDSLauncher } from '../ui/utils';
+import {
+  getWebDSConfigLauncher,
+  getWebDSDocLauncher,
+  getWebDSLauncher
+} from '../ui/utils';
 import { focusTracker } from '../widgets/utils';
 import { widgetSets } from './configuration';
 
@@ -119,6 +123,8 @@ const connectionInfo: ConnectionInfo = {
   spiMode: undefined,
   partNumber: undefined
 };
+
+let checkingConnection: boolean;
 
 let testrailOnline: boolean;
 
@@ -391,22 +397,37 @@ const refreshLauncher = () => {
   if (webdsConfigLauncher) {
     webdsConfigLauncher.update();
   }
+  const webdsDocLauncher = getWebDSDocLauncher() as any;
+  if (webdsDocLauncher) {
+    webdsDocLauncher.update();
+  }
 };
 
 export const checkConnection = async () => {
-  try {
-    const pn = await getPartNumber();
-    if (pn !== partNumber) {
-      partNumber = pn;
+  checkingConnection = true;
+  refreshLauncher();
+
+  let count = 0;
+  const maxTries = 2;
+  while (true) {
+    try {
+      const pn = await getPartNumber();
+      if (pn !== partNumber) {
+        partNumber = pn;
+      }
+      break;
+    } catch (error) {
+      if (++count == maxTries) {
+        console.error(error);
+        if (partNumber !== undefined) {
+          partNumber = undefined;
+        }
+        connectionInfo.interface = undefined;
+        checkingConnection = false;
+        refreshLauncher();
+        return;
+      }
     }
-  } catch (error) {
-    console.error(error);
-    if (partNumber !== undefined) {
-      partNumber = undefined;
-    }
-    connectionInfo.interface = undefined;
-    refreshLauncher();
-    return;
   }
 
   try {
@@ -422,6 +443,7 @@ export const checkConnection = async () => {
     connectionInfo.interface = undefined;
   }
 
+  checkingConnection = false;
   refreshLauncher();
 };
 
@@ -532,6 +554,10 @@ export const isExternal = (): boolean => {
 
 export const isTestRailOnline = (): boolean => {
   return testrailOnline;
+};
+
+export const isCheckingConnection = (): boolean => {
+  return checkingConnection;
 };
 
 const updateWebDSSettings = async (setting: string, value: any) => {

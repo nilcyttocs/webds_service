@@ -26,7 +26,7 @@ export const addExtensionUsage = async (extensionName: string) => {
       statistics.data.data[statistics.version].extensions[extensionName] + 1 ||
       1;
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -39,7 +39,7 @@ export const addGuidedTuningUsage = async (widgetName: string) => {
       statistics.data.data[statistics.version].guidedTuning[widgetName] + 1 ||
       1;
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -70,7 +70,7 @@ export const addStaticConfigUsage = async (
         ][label] + 1 || 1;
     }
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -78,23 +78,27 @@ export const addStaticConfigUsage = async (
 };
 
 export const uploadStatistics = async () => {
-  const requestHeaders: HeadersInit = new Headers();
-  requestHeaders.set('Content-Type', 'application/json');
+  if (stateDB && statistics.initialized) {
+    const requestHeaders: HeadersInit = new Headers();
+    requestHeaders.set('Content-Type', 'application/json');
 
-  const request = new Request(usageDataBaseURL, {
-    method: 'POST',
-    mode: 'cors',
-    headers: requestHeaders,
-    referrerPolicy: 'no-referrer',
-    body: JSON.stringify(statistics.data)
-  });
+    const request = new Request(usageDataBaseURL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: requestHeaders,
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify(statistics.data)
+    });
 
-  try {
-    const response = await fetch(request);
-    console.log(response);
-  } catch (error) {
-    console.error(`Error - POST ${usageDataBaseURL}\n${error}`);
-    return Promise.reject('Failed to upload statistics');
+    try {
+      const response = await fetch(request);
+      console.log(response);
+    } catch (error) {
+      console.error(`Error - POST ${usageDataBaseURL}\n${error}`);
+      return Promise.reject('Failed to upload statistics');
+    }
+  } else {
+    Promise.reject('Statistics database unavailable');
   }
 };
 
@@ -121,7 +125,7 @@ export const clearStatistics = async () => {
   if (stateDB && statistics.initialized) {
     resetStatistics({});
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);
     }
@@ -136,7 +140,7 @@ export const initializeStatistics = async () => {
     }
     resetStatistics(data);
     try {
-      //await stateDB.save(statistics.dbName, statistics.data as any);
+      await stateDB.save(statistics.dbName, statistics.data as any);
       statistics.initialized = true;
     } catch (error) {
       console.error(`Failed to save to ${statistics.dbName}\n${error}`);

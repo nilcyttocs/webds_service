@@ -91,15 +91,15 @@ export const uploadStatistics = async () => {
     });
 
     try {
-      const response = await fetch(request);
-      console.log(response);
+      await fetch(request);
     } catch (error) {
       console.error(`Error - POST ${usageDataBaseURL}\n${error}`);
       return Promise.reject('Failed to upload statistics');
     }
   } else {
-    Promise.reject('Statistics database unavailable');
+    return Promise.reject('Statistics database unavailable');
   }
+  return Promise.resolve();
 };
 
 const resetStatistics = (data: any) => {

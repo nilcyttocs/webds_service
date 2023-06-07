@@ -9,7 +9,8 @@ import { Token } from '@lumino/coreutils';
 import {
   addGuidedTuningUsage,
   addStaticConfigUsage,
-  initializeStatistics
+  initializeStatistics,
+  uploadStatistics
 } from './analytics/utils';
 import { addMenu } from './main_menu/utils';
 import {
@@ -81,6 +82,7 @@ export type WebDSService = {
   analytics: {
     addGuidedTuningUsage: (widgetName: string) => void;
     addStaticConfigUsage: (configName: string, target: string) => void;
+    uploadStatistics: () => Promise<void>;
   };
   greeting: () => void;
   packrat: {
@@ -184,7 +186,8 @@ const plugin: JupyterFrontEndPlugin<WebDSService> = {
     return {
       analytics: {
         addGuidedTuningUsage,
-        addStaticConfigUsage
+        addStaticConfigUsage,
+        uploadStatistics
       },
       greeting() {
         console.log('Hello! This is WebDS Service. How may I help you?');

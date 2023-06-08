@@ -13,6 +13,7 @@ const basicCommonWidgets = [
 const basicTouchAssessmentWidgets = [
   'ADC Data',
   'Production Tests',
+  'RAM Backdoor',
   'Test Data Collection',
   'Test Data Viewer',
   'Touch Data'

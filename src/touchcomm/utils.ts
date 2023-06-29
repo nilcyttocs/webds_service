@@ -78,7 +78,7 @@ export const getPartNumber = async (): Promise<string> => {
         partNumber = partNumber + utf8.charCodeAt(i).toString();
       }
     }
-    partNumber = partNumber.replace(/([A-Z])([A-Z])/g, '$1-$2');
+    partNumber = partNumber.replace(/([0-9])([A-Z])([A-Z])/g, '$1$2-$3');
     return partNumber;
   } catch (error) {
     console.error(error);

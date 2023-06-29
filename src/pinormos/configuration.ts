@@ -31,6 +31,7 @@ export const widgetSets = {
     'Integration Duration',
     'Library',
     'Local CBC and CSat',
+    'PDNR',
     'Reflash',
     'Sensor Mapping'
   ],

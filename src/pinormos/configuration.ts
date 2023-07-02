@@ -12,6 +12,7 @@ const basicCommonWidgets = [
 
 const basicTouchAssessmentWidgets = [
   'ADC Data',
+  'Lockdown And Custom Serialization',
   'Production Tests',
   'RAM Backdoor',
   'Test Data Collection',

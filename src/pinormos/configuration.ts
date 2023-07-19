@@ -38,6 +38,7 @@ export const widgetSets = {
   ],
   SB7900: [
     ...basicCommonWidgets,
+    'Device Info',
     'Register Map',
     'Local Dimming',
     'Trace and Log'

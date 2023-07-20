@@ -26,6 +26,7 @@ export const widgetSets = {
     ...basicTouchAssessmentWidgets,
     'Configuration Editor',
     'Device Info',
+    'Frame Timing',
     'Gear Selection',
     'Guided',
     'Hybrid Analog',

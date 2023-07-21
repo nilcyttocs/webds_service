@@ -465,12 +465,13 @@ export const pollConnection = async () => {
   setTimeout(pollConnection, pollConnectionPeriod);
 };
 
-const setDate = async (date: string) => {
+const setDate = async (date: string, timeZone: string) => {
   let token: string;
   let dataToSend: any = {
     command: {
       action: 'setDate',
-      target: date
+      target: date,
+      timeZone: timeZone
     }
   };
   try {
@@ -551,8 +552,9 @@ export const updateDSDKInfo = async () => {
   const minutes = String(currentDate.getMinutes()).padStart(2, '0');
   const seconds = String(currentDate.getSeconds()).padStart(2, '0');
   const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   try {
-    await setDate(formattedDateTime);
+    await setDate(formattedDateTime, timeZone);
   } catch (error) {
     console.error(error);
   }
